@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Changes to frameworks/base/packages/SystemUI/res/values/config.xml -->
+
+<resources>
+
+    <!-- Whether we're using the tablet-optimized recents interface (we use this
+     value at runtime for some things) -->
+    <bool name="config_recents_interface_for_tablets">true</bool>
+
+</resources>
+

@@ -1,0 +1,25 @@
+#
+# This file is read by the ueventd when a device comes on line
+# and uses this info to change the permissions and uid/gid.
+#
+#for SGX
+/dev/pvrsrvkm             0666   system   system
+/dev/pvr_sync             0666   system   system
+
+# JZ graphics
+/dev/x2d                  0666   root     graphics
+/dev/ipu0                 0666   root     graphics
+/dev/ipu1                 0666   root     graphics
+/dev/dmmu                 0666   root     graphics
+
+# Ingenic camera device
+/dev/cim                  0666    root    root
+
+# Ingenic vpu or tcsm
+/dev/tcsm		  0666    root    root
+/dev/jz-vpu		  0666    root    root
+
+/dev/graphics/*           0666    root    graphics
+
+# for Ingenic hdmi device
+/dev/hdmi                 0666   root     root

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Changes to frameworks/base/core/res/res/values-sw600dp/bools.xml -->
+
+<resources>
+    <!-- Enable camera for NP801, tablet user -->
+    <bool name="kg_enable_camera_default_widget">true</bool>
+</resources>

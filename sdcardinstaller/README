@@ -1,0 +1,15 @@
+
+Run this script to generate an SDCARD that will flash the CI20 board with
+an update version of u-boot that supports boota and the Android boot and system images
+
+To use:
+
+Build Android in the normal way:
+
+        $ cd $TOP
+        $ m -j24
+
+Run the script substituting the appropriate device name for /dev/sdX:
+
+        $ cd $TOP/device/imgtec/ci20/sdcardinstaller
+        $ ./mksdcard /dev/sdX

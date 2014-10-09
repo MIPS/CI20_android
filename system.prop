@@ -1,0 +1,39 @@
+#
+# system.prop for generic sdk 
+#
+
+ro.opengles.version=131072
+rild.libpath=/system/lib/libreference-ril.so
+rild.libargs=-d /dev/ttyUSB2
+
+persist.sys.usb.config=mass_storage
+
+mobiled.libpath=/system/lib/libmobiled.so
+#
+# H/W composition disabled
+#
+debug.sf.hw=1
+
+#timezone
+persist.sys.timezone=Asia/Shanghai
+
+#--for camera--s-
+#ro.board.camera.picture_upscale=true
+#ro.board.camera.upscale_id=0
+#ro.board.camera.sensor_w=640
+#ro.board.camera.sensor_h=480
+#ro.board.camera.upscale_dst_w=1600
+#ro.board.camera.upscale_dst_h=1200
+#--camera--e-
+#board config
+ro.board.hdmi.support=true
+ro.board.tvout.support=false
+ro.board.hasethernet=ethernet
+testing.mediascanner.skiplist=/storage/host-udisk/,/storage/udisk/
+dalvik.vm.heapsize=60m
+ro.sf.lcd_density=160
+
+
+ro.config.notification_sound=OnTheHunt.ogg
+ro.config.alarm_alert=Alarm_Classic.ogg
+ro.carrier=wifi-only

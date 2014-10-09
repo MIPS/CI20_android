@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+** Derived from: frameworks/base/core/res/res/xml/power_profile.xml
+**
+** Copyright 2009, The Android Open Source Project
+**
+** Licensed under the Apache License, Version 2.0 (the "License")
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+**     http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+*/
+-->
+
+<device name="Android">
+  <!-- Most values are the incremental current used by a feature,
+       in mA (measured at nominal voltage).
+       The default values are deliberately incorrect dummy values.
+       OEM's must measure and provide actual values before
+       shipping a device.
+       Example real-world values are given in comments, but they
+       are totally dependent on the platform and can vary
+       significantly, so should be measured on the shipping platform
+       with a power meter. -->
+
+  <item name="none">0</item>
+  <item name="screen.on">147</item>          <!-- DEFAULT: ~200mA -->
+  <item name="screen.full">472</item>        <!-- DEFAULT: ~300mA -->
+  <item name="bluetooth.active">0.1</item>   <!-- Bluetooth data transfer, NEED ESTIMATE; DEFAULT: ~10mA -->
+  <item name="bluetooth.on">0.1</item>       <!-- Bluetooth on & connectable, but not connected, NEED ESTIMATE; DEFAULT: ~0.1mA -->
+  <item name="wifi.on">13.7</item>           <!-- DEFAULT: ~3mA -->
+  <item name="wifi.active">71.3 </item>      <!-- WIFI data transfer, DEFAULT: ~200mA -->
+  <item name="wifi.scan">33 </item>          <!-- WIFI network scanning, DEFAULT: ~100mA -->
+  <item name="dsp.audio">14.1</item>         <!-- DEFAULT: ~10mA -->
+  <item name="dsp.video">80.1</item>         <!-- DEFAULT: ~50mA -->
+  <item name="radio.active">0.0</item>       <!-- DEFAULT: 200mA -->
+  <item name="radio.scanning">0.0</item>     <!-- cellular radio scanning for signal, DEFAULT: ~10mA -->
+  <item name="gps.on">0.0</item>             <!-- DEFAULT: ~50mA -->
+
+  <!-- Current consumed by the radio at different signal strengths, when paging -->
+  <array name="radio.on">                    <!-- Strength 0 to BINS-1 -->
+      <value>0.0</value>                     <!-- DEFAULT: ~2mA -->
+      <value>0.0</value>                     <!-- DEFAULT: ~1mA -->
+  </array>
+
+  <!-- Different CPU speeds as reported in
+       /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state -->
+  <array name="cpu.speeds">
+      <value>1200000</value>                 <!-- 1.2 GHz CPU speed -->
+  </array>
+
+  <!-- Current when CPU is idle -->
+  <item name="cpu.idle">5.1</item>	     <!-- DEFAULT: ~100mA (0.1) We appear to be a bit high here. -->
+
+  <!-- Current at each CPU speed, as per 'cpu.speeds' -->
+  <array name="cpu.active">
+      <value>96.6</value>                    <!-- DEFAULT: ~100mA (0.1) -->
+  </array>
+
+  <!-- This is the battery capacity in mAh (measured at nominal voltage) -->
+  <item name="battery.capacity">3500</item>
+
+</device>

@@ -1,0 +1,133 @@
+#
+# device/imgtec/ci20/config/init.ci20.rc
+#
+
+import /init.ci20.usb.rc
+
+on early-init
+    write /dev/note "init.ci20.rc: on early-init"
+    # Causing dhd to be down?
+    # chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
+    # chmod 0660 /sys/class/rfkill/rfkill0/state
+    # write /sys/class/rfkill/rfkill0/state 0
+
+on init
+    write /dev/note "init.ci20.rc: on init"
+    #
+    # wifi support:
+    #   ${ANDROID}/src/drivers/rfkill.c expects /dev/rfkill to be readable.
+    #   ${PWD}/wifi/IW/bcm4330/brcm_bt.sh writes to /sys/class/rfkill/rfkill0/state.
+    #   Make sure CONFIG_BCM4330_RFKILL=y in kernel .config file.
+    #       REMIND: Where is brcm_bt.sh invoked from?
+    #
+    setprop ro.bt.bdaddr_path "/system/etc/firmware/bcm4330/bt_addr"
+    chown bluetooth bluetooth ro.bt.bdaddr_path
+    chown bluetooth bluetooth /dev/ttyS2
+    chmod 0600 /dev/ttyS2
+    chmod 0660 /sys/class/rfkill/rfkill0/state
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
+
+    # See storage config details at http://source.android.com/tech/storage/
+    mkdir /mnt/shell/emulated 0700 shell shell
+    mkdir /storage/emulated 0555 root root
+
+    export EXTERNAL_STORAGE /storage/emulated/legacy
+    export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
+    export EMULATED_STORAGE_TARGET /storage/emulated
+
+    # Support legacy paths
+    symlink /storage/emulated/legacy /sdcard
+    symlink /storage/emulated/legacy /mnt/sdcard
+    symlink /storage/emulated/legacy /storage/sdcard0
+    symlink /mnt/shell/emulated/0 /storage/emulated/legacy
+
+    mkdir /storage/sdcard1 0400 system system
+
+on fs
+    write /dev/note "init.ci20.rc: on fs"
+    mount_all /fstab.ci20
+    setprop ro.crypto.fuse_sdcard true
+
+on post-fs-data
+    write /dev/note "init.ci20.rc: on post-fs-data"
+
+    # set bcm4330 bt mac cfg
+    chmod 0770 /data/misc/bluetooth
+
+    # change perms of dhcp and wifi socket
+    mkdir /data/misc/dhcp 0770 dhcp dhcp
+    mkdir /data/misc/wifi/sockets 0777 wifi wifi
+    mkdir /data/system 1775 system system
+
+    chown system system /sys/class/android_usb/android0/f_mass_storage/lun0/file
+    chmod 0660 /sys/class/android_usb/android0/f_mass_storage/lun0/file
+    chown system system /sys/class/android_usb/android0/f_mass_storage/lun1/file
+    chmod 0660 /sys/class/android_usb/android0/f_mass_storage/lun1/file
+    chown system system /sys/class/android_usb/android0/f_mass_storage/lun2/file
+    chmod 0660 /sys/class/android_usb/android0/f_mass_storage/lun2/file
+    chown system system /sys/class/android_usb/android0/f_rndis/ethaddr
+    chmod 0660 /sys/class/android_usb/android0/f_rndis/ethaddr
+
+    # we will remap this as /mnt/sdcard with the sdcard fuse tool
+    mkdir /data/media 0775 media_rw media_rw
+    chown media_rw media_rw /data/media
+
+    # Set indication (checked by vold) that we have finished this action
+    setprop vold.post_fs_data_done 1
+
+on boot
+    write /dev/note "init.ci20.rc: on boot"
+
+    setprop ro.tether.denied true
+    #================= BCM
+    #wpa_supplicant control socket for android wifi.c
+    setprop wifi.interface wlan0
+
+# FIXME: cache/data partition setup
+service setup_fs /system/bin/setup_fs data cache
+    class core
+    user root
+    group root
+    oneshot
+
+# virtual sdcard daemon running as media_rw (1023)
+service sdcard /system/bin/sdcard /data/media /mnt/shell/emulated 1023 1023
+    class late_start
+
+service wpa_supplicant /system/bin/wpa_supplicant \
+                       -g@android:wpa_wlan0 \
+                       -iwlan0 -Dnl80211 \
+                       -O/data/misc/wifi/sockets \
+                       -c/data/misc/wifi/wpa_supplicant.conf \
+                       -e/data/misc/wifi/entropy.bin
+    class main
+    socket wpa_wlan0 dgram 660 wifi wifi
+    disabled
+    oneshot
+
+service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL
+    class main
+    disabled
+    oneshot
+
+#================= BCM
+# add dhcpcd and wpa_supplicant services for wlan0
+service dhcpcd_wlan0 /system/bin/dhcpcd -ABKL
+    disabled
+    oneshot
+
+on property:init.svc.wpa_supplicant=stopped
+    stop dhcpcd
+
+service dhcpcd_eth0 /system/bin/dhcpcd -o domain_name_servers -ABKL
+    disabled
+    oneshot
+
+# --no-module indicates that it's ok that pvr isn't loaded as a module.
+service pvrsrvctl /system/bin/pvrsrvctl --start --no-module
+    class core
+    user root
+    group root
+    oneshot
+

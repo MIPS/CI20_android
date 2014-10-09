@@ -1,0 +1,222 @@
+#!/bin/bash
+#
+# Copyright (c) 2013,2014 Imagination Technologies
+# Original-Author: Paul Burton <paul.burton@imgtec.com>
+#
+# Creates an SD card which writes u-boot and Android filesystems to the CI20 NAND flash.
+# Derived from the Debian setup script by Paul Burton
+#
+# Usage:
+#   ./mksdcard /dev/sdX
+#
+
+set -e
+tmpDir=`mktemp -d`
+
+cleanup()
+{
+  echo "Cleaning up..."
+  [ -z "${sdMount}" ] || sudo umount ${sdMount}
+  rm -rf ${tmpDir}
+  [ "${finished}" = "true" ] && sudo eject ${device} && echo "Cleanup completed; it is safe to remove your card"
+  trap - EXIT INT TERM
+}
+trap cleanup EXIT INT TERM
+
+die()
+{
+  echo "$@" >&2
+  exit 1
+}
+
+# check device
+device="$1"
+[ -e "${device}" ] || die "Device '${device}' not found"
+grep ${device} /etc/mtab >/dev/null && \
+  die "Device '${device}' contains mounted partitions"
+
+# check for Android images
+bootImg=${BOOTIMG:-${OUT}/boot.img}
+[ -e "${bootImg}" ] || die "Android boot image '${bootImg}' not found"
+recoveryImg=${RECOVERYIMG:-${OUT}/recovery.img}
+[ -e "${recoveryImg}" ] || die "Android recovery image '${recoveryImg}' not found"
+systemImg=${SYSTEMIMG:-${OUT}/system.img}
+[ -e "${systemImg}" ] || die "Android system image '${systemImg}' not found"
+
+# Check that systemImg is a ubifs
+# FIXME: unfortunately file(1) is not very helpful...
+file -b "${systemImg}" | grep -q '^data$' || \
+    die "File '${systemImg}' is not a UBI filesystem image"
+
+# default environment
+[ ! -z "${CROSS_COMPILE}" ] || export CROSS_COMPILE=mips-linux-gnu-
+[ ! -z "${UBOOT_REPO}" ] || UBOOT_REPO="git://git.le.imgtec.org/ci20/u-boot.git"
+[ ! -z "${UBOOT_BRANCH}" ] || UBOOT_BRANCH="ci20-v2013.10"
+
+if [ -z "${JOBS}" ]; then
+  cpuCount=`grep -Ec '^processor' /proc/cpuinfo`
+  JOBS=`echo "${cpuCount} * 2" | bc`
+fi
+
+# check for tools
+which bc >/dev/null || die "No bc in \$PATH"
+which sfdisk >/dev/null || die "No sfdisk in \$PATH"
+${CROSS_COMPILE}gcc --version >/dev/null 2>&1 || \
+  die "No ${CROSS_COMPILE}gcc, set \$CROSS_COMPILE"
+${CROSS_COMPILE}objcopy --version >/dev/null 2>&1 || \
+  die "No ${CROSS_COMPILE}objcopy, set \$CROSS_COMPILE"
+
+# partition SD/MMC card
+# Limit partition size to 1GB (uboot seems to have problems with large (>[24]GB?) filesystems
+# FIXME: sfdisk often fails to reread the parition information
+set +e
+sudo sfdisk ${device} -uM -L << EOF
+2,1024,L
+EOF
+set -e
+sudo blockdev --rereadpt ${device}
+sudo partprobe ${device}
+
+# create ext3 partition
+sudo mkfs.ext3 -L "CI20_Android" ${device}1
+
+# mount ext3 partition
+sdMount=${tmpDir}/sd_mount
+mkdir ${sdMount}
+sudo mount ${device}1 ${sdMount}
+sudo chmod a+w ${sdMount}
+
+# clone u-boot
+ubootDir=$tmpDir/u-boot
+git clone ${UBOOT_REPO} -b ${UBOOT_BRANCH} --depth 1 $ubootDir
+
+# build & install MMC u-boot
+pushd $ubootDir
+  make distclean
+  make ci20_mmc_config
+  make -j${JOBS}
+  sudo dd if=spl/u-boot-spl.bin of=${device} obs=512 seek=1
+  sudo dd if=u-boot.img of=${device} obs=1K seek=14
+popd
+
+# build & copy NAND u-boot
+pushd $ubootDir
+  make distclean
+  make ci20_config
+  make -j${JOBS}
+  sudo cp -v spl/u-boot-spl.bin ${sdMount}/
+  sudo cp -v u-boot.img ${sdMount}/
+popd
+
+# copy Android boot image
+sudo cp -v ${bootImg} ${sdMount}/
+bootImgSize=`stat -c %s ${bootImg}`
+bootImgSizeHex=`echo "ibase=10; obase=16; ${bootImgSize}" | bc`
+
+# copy Android recovery image
+sudo cp -v ${recoveryImg} ${sdMount}/
+recoveryImgSize=`stat -c %s ${recoveryImg}`
+recoveryImgSizeHex=`echo "ibase=10; obase=16; ${recoveryImgSize}" | bc`
+
+# copy Android system image
+# FIXME: copy is done below during MMC environment generation
+# We could copy the system image in one chunk but it would make
+# the installation less verbose
+systemImgSize=`stat -c %s ${systemImg}`
+systemImgSizeHex=`echo "ibase=10; obase=16; ${systemImgSize}" | bc`
+
+envText=${tmpDir}/u-boot-env.txt
+envBin=${tmpDir}/u-boot-env.bin
+envSize=$((32 * 1024))
+
+# generate NAND u-boot environment
+androidBootArgs="debug"
+# Command to boot Android from NAND
+androidBootCmd="mtdparts default; ubi part system; ubi read 0x88000000 boot 0x800000; boota 0x88000000"
+
+echo "bootargs=${androidBootArgs}" >${envText}
+echo "abootcmd=${androidBootCmd}" >>${envText}
+echo "bootcmd=run abootcmd" >>${envText}
+
+echo
+echo "NAND U-boot environment:"
+cat ${envText}
+${ubootDir}/tools/mkenvimage -s ${envSize} -o ${envBin} ${envText}
+sudo cp ${envBin} ${sdMount}/u-boot-env.bin
+
+# generate (SD/MMC) u-boot environment
+androidInitCmd="mw.l 0xb0010548 0x8000; \
+nand erase.chip; \
+ext4load mmc 0:1 0x80000000 u-boot-spl.bin; \
+writespl 0x80000000 8; \
+ext4load mmc 0:1 0x80000000 u-boot.img; \
+nand write 0x80000000 0x800000 0x80000; \
+mtdparts default; \
+ext4load mmc 0:1 0x80000000 u-boot-env.bin; \
+nand write 0x80000000 0x00a00000 ${envSize}; \
+ubi part system; \
+ubi create boot 0x800000; \
+ubi create recovery 0x800000; \
+ubi create system 0x28000000; \
+ubi create data 0x40000000; \
+ubi create cache 0x10000000; \
+ext4load mmc 0:1 0x80000000 boot.img; \
+ubi write 0x80000000 boot ${bootImgSizeHex}; \
+ext4load mmc 0:1 0x80000000 recovery.img; \
+ubi write 0x80000000 recovery ${recoveryImgSizeHex}; \
+run flash_system0"
+androidBootArgs="debug"
+# Command to boot Android from MMC
+androidBootCmd="ext4load mmc 0:1 0x88000000 boot.img; boota 0x88000000"
+
+echo "bootargs=${androidBootArgs}" >${envText}
+echo "abootcmd=${androidBootCmd}" >>${envText}
+echo "ainitcmd=${androidInitCmd}" >>${envText}
+
+# FIXME: Decide what to do after completing the flash setup. For a
+# onetime setup image it's convenient to reset the bootcmd. When using
+# the same sdcard to install multiple times it is not
+oneTime=${ONETIME-true}
+if [ "${oneTime}" = "true" ]; then
+  # Initialise flash then switch to booting Android from MMC
+  echo "bootcmd=run ainitcmd; setenv bootcmd run abootcmd; saveenv" >>${envText}
+else
+  # Initialise flash
+  echo "bootcmd=run ainitcmd" >>${envText}
+fi
+
+idx=0
+remaining=${systemImgSize}
+maxBlock=$((128 * 1024 * 1024))
+while [ ${remaining} -gt 0 ]; do
+  currSize=${remaining}
+  [ ${currSize} -le $((128 * 1024 * 1024)) ] || currSize=${maxBlock}
+  currSizeHex=`echo "ibase=10; obase=16; ${currSize}" | bc`
+  currFile="system.ubifs.${idx}"
+  echo "Creating ${currFile}"
+  sudo dd if=${systemImg} of=${sdMount}/${currFile} \
+    bs=${maxBlock} skip=${idx} count=1
+  fullSize=""
+  [ ${idx} -gt 0 ] || fullSize="${systemImgSizeHex}"
+  flashCmd="ext4load mmc 0:1 0x80000000 ${currFile};"
+  flashCmd="${flashCmd} ubi write.part 0x80000000 system ${currSizeHex} ${fullSize};"
+  flashCmd="${flashCmd} run flash_system$((${idx} + 1))"
+  echo "flash_system${idx}=${flashCmd}" >>${envText}
+  idx=$((${idx} + 1))
+  remaining=$((${remaining} - ${currSize}))
+done
+echo "flash_system${idx}=mw.l 0xb0010544 0x8000; echo All done :)" >>${envText}
+
+echo
+echo "MMC U-boot environment:"
+cat ${envText}
+${ubootDir}/tools/mkenvimage -s ${envSize} -o ${envBin} ${envText}
+sudo dd if=${envBin} of=${device} obs=1 seek=$((526 * 1024))
+
+echo
+echo "SD contents:"
+ls -hl ${sdMount}/
+
+finished=true
+echo
+echo "Finished, wait for clean up before removing your card!"

@@ -1,0 +1,59 @@
+#!/bin/bash
+#
+# Copyright (c) 2014 Imagination Technologies
+#
+# Convert an EXT filesystem image to UBIFS
+#
+# Usage:
+#   convert_extfs_to_ubifs extfs.img ubifs.img
+#
+
+set -e
+tmpDir=`mktemp -d`
+
+cleanup()
+{
+# echo "Cleaning up..."
+  [ -z "${extMount}" ] || sudo umount ${extMount}
+  rm -rf ${tmpDir}
+  trap - EXIT INT TERM
+}
+trap cleanup EXIT INT TERM
+
+die()
+
+{
+  echo "$@" >&2
+  exit 1
+}
+
+# Check argument count
+[ $# = 2 ] || die "Usage: $0 extfs.img ubifs.img"
+
+# extfs image
+extImg="$1"
+[ -e "${extImg}" ] || die "filesystem image '${extImg}' not found"
+
+# check that extImg is an EXT filesystem image
+file "${extImg}" | grep -q ' Linux rev 1.0 ext[234] ' || \
+    die "File '${extImg}' is not an EXT filesystem image"
+
+# ubifs image
+ubifsImg="$2"
+
+mkfsUbifs="mkfs.ubifs"
+# FIXME: Use local version of mkfs.ubifs (v1.5.1)
+# The v1.5 version that comes with Ubuntu 12.04 does not support 2M blocksize
+mkfsUbifs="`dirname $0`/mkfs.ubifs"
+
+# check for tools
+which "${mkfsUbifs}" >/dev/null || die "No ${mkfsUbifs} in \$PATH"
+
+# build UBIFS image
+# FIXME: there must be some way to do this without needing sudo
+extMount="${tmpDir}/ext_mount"
+mkdir "${extMount}"
+sudo mount -o loop,ro "${extImg}" "${extMount}"
+# Create the output image first to ensure that is its owned by the current user
+touch "${ubifsImg}"
+sudo "${mkfsUbifs}" -q -r "${extMount}" -m 8192 -e 2080768 -c 4196 -o "${ubifsImg}"

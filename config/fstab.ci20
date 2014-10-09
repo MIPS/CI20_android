@@ -1,0 +1,11 @@
+#
+# device/imgtec/ci20/config/fstab.ci20
+# The filesystem that contains the filesystem checker binary (typically /system) cannot
+# specify MF_CHECK, and must come before any filesystems that do specify MF_CHECK
+#<src>                  <mnt_point>             <type>  <mnt_flags>   <fs_mgr_flags>
+#ubi0:boot              /boot                   raw     defaults      wait
+#ubi0:recovery          /recovery               raw     defaults      wait
+ubi0:system             /system                 ubifs   defaults      wait
+ubi0:data               /data                   ubifs   defaults      wait,check
+ubi0:cache              /cache                  ubifs   defaults      wait,check
+#/dev/block/mmcblk0p1    /storage/sdcard1        vfat    defaults      wait

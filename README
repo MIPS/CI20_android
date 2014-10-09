@@ -1,0 +1,36 @@
+
+Initialize the environment with the envsetup.sh script. Assuming you
+are at the top of the Android source tree:
+    $ export TOP=`pwd`
+    $ . build/envsetup.sh
+
+Choose target.
+    $ lunch aosp_ci20-userdebug
+
+Build everything.
+    $ make -j24
+
+Generate an SDCARD image containing the Android compatible u-boot and
+Android boot/recovery/system images.
+
+    $ cd $TOP/device/imgtec/ci20/sdcardinstaller
+    $ ./mksdcard /dev/sdX
+
+Install Android on CI20. Set the JP3 link to 2-3 to enable boot from
+SDCARD. Install the SDCARD and powercycle the board. u-boot will
+start up and automatically reformat the flash and install both u-boot
+and Android to it. After it has completed you should see something
+like:
+
+> 134217728 bytes read in 19742 ms (6.5 MiB/s)
+> 134217728 bytes written to volume system
+> 9338880 bytes read in 1440 ms (6.2 MiB/s)
+> 9338880 bytes written to volume system
+> All done :)
+
+After the Android installation is complete it is possible to boot
+Android from NAND by setting the JP3 link to 1-2 and power cycling the
+board. If the JP3 link is left in 2-3, and the board is power cycled
+Android will also boot, but the boot.img file will be read from the
+SDCARD. This can be convenient when testing changes for the kernel or
+root filesystem.

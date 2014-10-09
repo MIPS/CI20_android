@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Modifications to:
+         frameworks/base/core/res/res/values-sw600dp/dimens.xml
+-->
+
+
+<resources>
+    <!-- Preference fragment padding, sides -->
+       <!-- DEFAULT:
+       <dimen name="preference_fragment_padding_side">24dp</dimen> -->
+       <dimen name="preference_fragment_padding_side">32dp</dimen>
+
+       <!-- DEFAULT:
+       <dimen name="preference_screen_header_padding_side>24dip</dimen> -->
+       <dimen name="preference_screen_header_padding_side">0dip</dimen>
+</resources>
