@@ -125,7 +125,7 @@ service dhcpcd_eth0 /system/bin/dhcpcd -o domain_name_servers -ABKL
     oneshot
 
 # --no-module indicates that it's ok that pvr isn't loaded as a module.
-service pvrsrvctl /system/bin/pvrsrvctl --start --no-module
+service pvrsrvctl /vendor/bin/pvrsrvctl --start --no-module
     class core
     user root
     group root
