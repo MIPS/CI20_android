@@ -158,8 +158,8 @@ ubi part system; \
 ubi create boot 0x800000; \
 ubi create recovery 0x800000; \
 ubi create system 0x28000000; \
-ubi create data 0x40000000; \
 ubi create cache 0x10000000; \
+ubi create data 0x100000000; \
 ext4load mmc 0:1 0x80000000 boot.img; \
 ubi write 0x80000000 boot ${bootImgSizeHex}; \
 ext4load mmc 0:1 0x80000000 recovery.img; \
