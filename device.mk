@@ -74,6 +74,9 @@ PRODUCT_PACKAGES := 	\
     guidance            \
     busybox
 
+PRODUCT_PACKAGES += 	\
+    CI20Launcher
+
 PRODUCT_PACKAGES +=      \
     hwcomposer.xb4780    \
     camera.xb4780        \
