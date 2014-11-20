@@ -8,4 +8,4 @@
 ubi0:system             /system                 ubifs   defaults      wait
 ubi0:data               /data                   ubifs   defaults      wait,check
 ubi0:cache              /cache                  ubifs   defaults      wait,check
-#/dev/block/mmcblk0p1    /storage/sdcard1        vfat    defaults      wait
+/devices/platform/jzmmc.0/mmc_host/mmc0 auto    vfat    defaults      voldmanaged=sdcard1:auto
