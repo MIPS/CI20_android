@@ -77,13 +77,22 @@ set -e
 sudo blockdev --rereadpt ${device}
 sudo partprobe ${device}
 
+# check first partition
+if [ -e "${device}1" ]; then
+	part=1
+elif [ -e "${device}p1" ]; then
+	part=p1
+else
+	die "Could not determine first partition of drive ${device}"
+fi
+
 # create ext3 partition
-sudo mkfs.ext3 -L "CI20_Android" ${device}1
+sudo mkfs.ext3 -L "CI20_Android" ${device}${part}
 
 # mount ext3 partition
 sdMount=${tmpDir}/sd_mount
 mkdir ${sdMount}
-sudo mount ${device}1 ${sdMount}
+sudo mount ${device}${part} ${sdMount}
 sudo chmod a+w ${sdMount}
 
 # clone u-boot
