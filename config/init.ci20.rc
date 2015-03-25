@@ -118,16 +118,37 @@ service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL
     disabled
     oneshot
 
+service iprenew_bnep0 /system/bin/dhcpcd -n
+    class main
+    disabled
+    oneshot
+
 #================= BCM
 # add dhcpcd and wpa_supplicant services for wlan0
 service dhcpcd_wlan0 /system/bin/dhcpcd -ABKL
+    class main
+    disabled
+    oneshot
+
+service iprenew_wlan0 /system/bin/dhcpcd -n
+    class main
     disabled
     oneshot
 
 on property:init.svc.wpa_supplicant=stopped
     stop dhcpcd
 
+# DHCPCD
+# # eth0
 service dhcpcd_eth0 /system/bin/dhcpcd -o domain_name_servers -ABKL
+    class main
+    disabled
+    oneshot
+
+# IP Renew
+# # eth0
+service iprenew_eth0 /system/bin/dhcpcd -n
+    class main
     disabled
     oneshot
 
