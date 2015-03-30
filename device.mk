@@ -85,7 +85,8 @@ PRODUCT_PACKAGES +=      \
     audio_policy.xb4780  \
     lights.xb4780        \
     libdmmu              \
-    libjzipu
+    libjzipu             \
+    audio.a2dp.default
 
 #
 # Buildi xbomx packages/modules from source
