@@ -75,7 +75,8 @@ PRODUCT_PACKAGES := 	\
     busybox
 
 PRODUCT_PACKAGES += 	\
-    CI20Launcher
+    CI20Launcher        \
+    ethernet
 
 PRODUCT_PACKAGES +=      \
     hwcomposer.xb4780    \

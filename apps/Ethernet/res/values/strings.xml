@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ethernet</string>
+    <string name="eth_config_title" translatable="false">Configure Ethernet Device</string>
+    <string name="eth_advanced_title" translatable="false">Advanced Ethernet Settings</string>
+    <string name="eth_setting" translatable="false">Ethernet settings</string>
+    <string name="eth_dev_list" translatable="false">Ethernet Devices:</string>
+    <string name="eth_con_type" translatable="false">Connection Type</string>
+    <string name="eth_con_type_dhcp" translatable="false">DHCP</string>
+    <string name="eth_con_type_manual" translatable="false">Static IP</string>
+    <string name="eth_dns" translatable="false">DNS address</string>
+    <string name="eth_ipaddr" translatable="false">IP address</string>
+    <string name="eth_check_config" translatable="false">Check Ethernet</string>
+    <string name="eth_do_config" translatable="false">Configure Ethernet</string>
+    <string name="proxy_setting">Proxy settings</string>
+    <string name="proxy_address">Proxy hostname</string>
+    <string name="proxy_port">Proxy port</string>
+    <string name="proxy_exclusionlist">Bypass proxy for</string>
+    <string name="eth_proxy_address">Proxy address</string>
+    <string name="show_need_setting">Configure the static IP and DNS address in this mode</string>
+    <string name="bypass_hint">Valid addresses split by \",\"</string>
+    <string name="bad_arguments">Incorrect parameters</string>
+    <string name="ip_mode">IP mode</string>
+    <string name="menu_save">Save</string>
+    <string name="menu_cancel">Cancel</string>
+</resources>
