@@ -50,8 +50,8 @@ file -b "${systemImg}" | grep -q '^data$' || \
 
 # default environment
 [ ! -z "${CROSS_COMPILE}" ] || export CROSS_COMPILE=mips-linux-gnu-
-[ ! -z "${UBOOT_REPO}" ] || UBOOT_REPO="git://git.le.imgtec.org/ci20/u-boot.git"
-[ ! -z "${UBOOT_BRANCH}" ] || UBOOT_BRANCH="ci20-v2013.10"
+[ ! -z "${UBOOT_REPO}" ] || UBOOT_REPO="https://github.com/MIPS/CI20_u-boot.git"
+[ ! -z "${UBOOT_BRANCH}" ] || UBOOT_BRANCH="dev-mips-kitkat-v2013.10"
 
 if [ -z "${JOBS}" ]; then
   cpuCount=`grep -Ec '^processor' /proc/cpuinfo`
@@ -68,7 +68,7 @@ ${CROSS_COMPILE}objcopy --version >/dev/null 2>&1 || \
 
 # partition SD/MMC card
 # Limit partition size to 1GB (uboot seems to have problems with large (>[24]GB?) filesystems
-# FIXME: sfdisk often fails to reread the parition information
+# FIXME: sfdisk often fails to reread the partition information
 set +e
 sudo sfdisk ${device} -uM -L << EOF
 2,1024,L
