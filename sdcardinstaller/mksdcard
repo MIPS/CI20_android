@@ -50,7 +50,7 @@ file -b "${systemImg}" | grep -q '^data$' || \
 
 # default environment
 [ ! -z "${CROSS_COMPILE}" ] || export CROSS_COMPILE=mips-linux-gnu-
-[ ! -z "${UBOOT_REPO}" ] || UBOOT_REPO="https://github.com/MIPS/CI20_u-boot.git"
+[ ! -z "${UBOOT_REPO}" ] || UBOOT_REPO="https://github.com/MIPS/CI20_u-boot"
 [ ! -z "${UBOOT_BRANCH}" ] || UBOOT_BRANCH="dev-mips-kitkat-v2013.10"
 
 if [ -z "${JOBS}" ]; then
@@ -77,13 +77,22 @@ set -e
 sudo blockdev --rereadpt ${device}
 sudo partprobe ${device}
 
+# check first partition
+if [ -e "${device}1" ]; then
+	part=1
+elif [ -e "${device}p1" ]; then
+	part=p1
+else
+	die "Could not determine first partition of drive ${device}"
+fi
+
 # create ext3 partition
-sudo mkfs.ext3 -L "CI20_Android" ${device}1
+sudo mkfs.ext3 -L "CI20_Android" ${device}${part}
 
 # mount ext3 partition
 sdMount=${tmpDir}/sd_mount
 mkdir ${sdMount}
-sudo mount ${device}1 ${sdMount}
+sudo mount ${device}${part} ${sdMount}
 sudo chmod a+w ${sdMount}
 
 # clone u-boot
@@ -176,7 +185,7 @@ echo "ainitcmd=${androidInitCmd}" >>${envText}
 # FIXME: Decide what to do after completing the flash setup. For a
 # onetime setup image it's convenient to reset the bootcmd. When using
 # the same sdcard to install multiple times it is not
-oneTime=${ONETIME-true}
+oneTime=${ONETIME-false}
 if [ "${oneTime}" = "true" ]; then
   # Initialise flash then switch to booting Android from MMC
   echo "bootcmd=run ainitcmd; setenv bootcmd run abootcmd; saveenv" >>${envText}
