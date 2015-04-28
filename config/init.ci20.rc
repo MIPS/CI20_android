@@ -35,6 +35,13 @@ on init
     mkdir /mnt/media_rw/sdcard1 0700 media_rw media_rw
     mkdir /storage/sdcard1 0700 root root
 
+    # USB OTG support
+    mkdir /mnt/media_rw/usbdisk1 0700 media_rw media_rw
+    mkdir /storage/usbdisk1 0700 root root
+
+    mkdir /mnt/media_rw/usbdisk2 0700 media_rw media_rw
+    mkdir /storage/usbdisk2 0700 root root
+
     export EXTERNAL_STORAGE /storage/emulated/legacy
     export EMULATED_STORAGE_SOURCE /mnt/shell/emulated
     export EMULATED_STORAGE_TARGET /storage/emulated
@@ -158,4 +165,12 @@ service pvrsrvctl /vendor/bin/pvrsrvctl --start --no-module
     user root
     group root
     oneshot
+
+service fuse_usbdisk1 /system/bin/sdcard -u 1023 -g 1023 -w 1023 -d /mnt/media_rw/usbdisk1 /storage/usbdisk1
+    class late_start
+    disabled
+
+service fuse_usbdisk2 /system/bin/sdcard -u 1023 -g 1023 -w 1023 -d /mnt/media_rw/usbdisk2 /storage/usbdisk2
+    class late_start
+    disabled
 
