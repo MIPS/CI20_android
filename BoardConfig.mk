@@ -92,6 +92,7 @@ PRODUCT_VENDOR_KERNEL_HEADERS := hardware/ingenic/xb4780/kernel-headers
 TARGET_WITH_MC := true
 
 WITH_JIT := true
+WITH_DEXPREOPT=true
 
 #  Triple framebuffers for "surfaceflinger/DisplayHardware/FramebufferSurface.cpp"
 NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3

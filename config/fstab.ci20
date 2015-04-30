@@ -5,9 +5,9 @@
 #<src>                  <mnt_point>             <type>  <mnt_flags>   <fs_mgr_flags>
 #ubi0:boot              /boot                   raw     defaults      wait
 #ubi0:recovery          /recovery               raw     defaults      wait
-ubi0:system             /system                 ubifs   defaults      wait
-ubi0:data               /data                   ubifs   defaults      wait,check
-ubi0:cache              /cache                  ubifs   defaults      wait,check
+/dev/ubi0_2             /system                 ubifs   defaults      wait
+/dev/ubi0_4             /data                   ubifs   defaults      wait,check
+/dev/ubi0_3             /cache                  ubifs   defaults      wait,check
 /devices/platform/jzmmc.0/mmc_host/mmc0 auto    vfat    defaults      voldmanaged=sdcard1:auto
 /devices/platform/jz4780-dwc2/dwc2/usb1/1-1    auto    vfat    defaults      voldmanaged=usbdisk1:auto
 /devices/platform/jz-ehci.0/usb2/2-1           auto    vfat    defaults      voldmanaged=usbdisk2:auto
