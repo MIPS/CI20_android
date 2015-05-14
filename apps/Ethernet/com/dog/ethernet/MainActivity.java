@@ -33,7 +33,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 public class MainActivity extends Activity {
-    private static EthernetEnabler mEthEnabler;
+    private EthernetEnabler mEthEnabler;
     private EthernetConfigDialog mEthConfigDialog;
     private Button mBtnConfig;
     private Button mBtnCheck;
@@ -66,7 +66,7 @@ public class MainActivity extends Activity {
         addListenerOnBtnAdvanced();
     }
 
-    public static void createNewEthernetEnabler(Context context){
+    public void createNewEthernetEnabler(Context context){
         mEthEnabler = new EthernetEnabler(context);
         mEthEnabler.getManager().initProxy();
     }
