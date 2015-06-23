@@ -29,6 +29,7 @@
      devices.
 -->
 <permissions>
+    <feature name="android.hardware.audio.output" />
     <feature name="android.hardware.bluetooth" />
     <feature name="android.hardware.microphone" />
     <feature name="android.hardware.wifi" />
@@ -38,8 +39,19 @@
     <library name="com.android.future.usb.accessory"
             file="/system/framework/com.android.future.usb.accessory.jar" />
 
-    <!-- Feature to specify if the device supports adding device admins for CTS. -->
+    <!-- basic system services -->
+    <feature name="android.software.app_widgets" />
+    <feature name="android.software.voice_recognizers" />
+    <feature name="android.software.backup" />
+    <feature name="android.software.home_screen" />
+    <feature name="android.software.input_methods" />
+    <feature name="android.software.print" />
+
+    <!-- Feature to specify if the device supports adding device admins. -->
     <feature name="android.software.device_admin" />
+
+    <!-- Feature to specify if the device support managed users. -->
+    <feature name="android.software.managed_users" />
 
     <!-- devices with GPS must include android.hardware.location.gps.xml -->
     <!-- devices with a rear-facing camera must include one of these as appropriate:

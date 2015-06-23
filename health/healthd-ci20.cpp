@@ -28,11 +28,10 @@ using namespace android;
 int healthd_board_battery_update(struct BatteryProperties *props)
 {
     // Produce some fake values
+    props->batteryPresent = true;
     props->chargerAcOnline = true;
     props->batteryStatus = BATTERY_STATUS_FULL;
     props->batteryHealth = BATTERY_HEALTH_GOOD;
-    props->batteryCurrentNow = 10000;    // 10mA
-    props->batteryChargeCounter = 1;     // 1st charge?
     props->batteryLevel = 100;           // 100%
     props->batteryVoltage = 4900;        // 4.900V
     props->batteryTemperature = 220;     // 22C

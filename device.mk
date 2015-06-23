@@ -24,11 +24,11 @@ PRODUCT_COPY_FILES := \
     $(LOCAL_KERNEL):kernel
 
 PRODUCT_COPY_FILES += \
-	$(LOCAL_PATH)/config/init.ci20.rc:root/init.ci20.rc \
-	$(LOCAL_PATH)/config/init.ci20.usb.rc:root/init.ci20.usb.rc \
-	$(LOCAL_PATH)/config/fstab.ci20:root/fstab.ci20 \
-        $(LOCAL_PATH)/config/ueventd.ci20.rc:root/ueventd.ci20.rc \
-	$(LOCAL_PATH)/config/init.recovery.ci20.rc:root/init.recovery.ci20.rc
+    $(LOCAL_PATH)/config/init.ci20.rc:root/init.ci20.rc \
+    $(LOCAL_PATH)/config/init.ci20.usb.rc:root/init.ci20.usb.rc \
+    $(LOCAL_PATH)/config/fstab.ci20:root/fstab.ci20 \
+    $(LOCAL_PATH)/config/ueventd.ci20.rc:root/ueventd.ci20.rc \
+    $(LOCAL_PATH)/config/init.recovery.ci20.rc:root/init.recovery.ci20.rc
 
 # Input device files
 PRODUCT_COPY_FILES += \
@@ -45,8 +45,11 @@ PRODUCT_COPY_FILES += \
 
 # These are the hardware-specific features
 PRODUCT_COPY_FILES += \
-	frameworks/native/data/etc/android.hardware.camera.xml:system/etc/permissions/android.hardware.camera.xml \
-	$(LOCAL_PATH)/tablet_core_hardware.xml:system/etc/permissions/tablet_core_hardware.xml
+    frameworks/native/data/etc/android.hardware.camera.xml:system/etc/permissions/android.hardware.camera.xml \
+    $(LOCAL_PATH)/tablet_core_hardware.xml:system/etc/permissions/tablet_core_hardware.xml \
+    frameworks/native/data/etc/android.hardware.audio.low_latency.xml:system/etc/permissions/android.hardware.audio.low_latency.xml \
+    frameworks/native/data/etc/android.hardware.ethernet.xml:system/etc/permissions/android.hardware.ethernet.xml
+
 
 #FIXME: set PRODUCT_AAPT_CONFIG? Eg: 
 ## # This device is xhdpi.  However the platform doesn't
@@ -75,7 +78,6 @@ PRODUCT_PACKAGES := 	\
     busybox
 
 PRODUCT_PACKAGES += 	\
-    CI20Launcher        \
     ethernet
 
 PRODUCT_PACKAGES +=      \
@@ -89,7 +91,7 @@ PRODUCT_PACKAGES +=      \
     audio.a2dp.default
 
 #
-# Buildi xbomx packages/modules from source
+# Build libxbomx packages/modules from source:
 #
 PRODUCT_PACKAGES += \
     libstagefrighthw \
@@ -97,6 +99,13 @@ PRODUCT_PACKAGES += \
     libstagefright_hard_vlume \
     libstagefright_hard_x264hwenc \
     libOMX_Core
+
+#
+# WiFi support
+#
+PRODUCT_PACKAGES += \
+    wpa_supplicant \
+    wpa_supplicant.conf
 
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.opengles.version=131072
@@ -108,14 +117,12 @@ PRODUCT_PROPERTY_OVERRIDES += \
     wifi.interface=wlan0 \
     wifi.supplicant_scan_interval=15
 
-#PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     persist.sys.usb.config=mtp
 
 # for CtsVerifier
 PRODUCT_PACKAGES += \
     com.android.future.usb.accessory
-
-$(call inherit-product, frameworks/native/build/tablet-dalvik-heap.mk)
 
 $(call inherit-product, hardware/ingenic/xb4780/libGPU/gpu.mk)
 
@@ -146,13 +153,10 @@ PRODUCT_COPY_FILES += \
 $(call inherit-product, hardware/ingenic/xb4780/libxbomx/xbomx.mk)
 
 #
-# Inherit GMS apps
+# inherit from the non-open-source side, if present
 #
+$(call inherit-product-if-exists, vendor/imgtec/$(TARGET_BOARD_NAME)/$(TARGET_BOARD_NAME)-vendor.mk)
 $(call inherit-product-if-exists, vendor/google/products/gms.mk)
-
-# Powerful vfat check tool
-PRODUCT_COPY_FILES += \
-	$(LOCAL_PATH)/dosfstools/fsck_msdos:/system/bin/fsck_msdos
 
 # Get the TTS language packs
 $(call inherit-product-if-exists, external/svox/pico/lang/all_pico_languages.mk)
@@ -173,30 +177,31 @@ PRODUCT_PROPERTY_OVERRIDES +=                                           \
     service.adb.root=1							\
     persist.service.adb.enable=1
 
-# FIXME: really need /system/lib/libmobiled.so?
-#
-PRODUCT_PROPERTY_OVERRIDES +=                                           \
+
+PRODUCT_PROPERTY_OVERRIDES +=    \
     ro.telephony.call_ring.multiple=0                                   \
     mobiled.libpath=/system/lib/libmobiled.so
 
 # FIXME: needed?
-PRODUCT_PROPERTY_OVERRIDES +=                                           \
+#PRODUCT_PROPERTY_OVERRIDES +=                                           \
 #     ro.board.hdmi.support=true                                        \
 #     ro.board.hdmi.device=HDMI,LCD,SYNC                                \
 #     ro.board.hdmi.hotplug.support=true                                \
 
 PRODUCT_PROPERTY_OVERRIDES +=                                           \
-     ro.board.tvout.support=false                                       \
-     ro.board.hasethernet=ethernet
+     ro.board.tvout.support=false
 #    ro.board.haspppoe=pppoe
 
 # H/W composition disabled
-#PRODUCT_PROPERTY_OVERRIDES +=                                          \
-    debug.sf.hw=1
+PRODUCT_PROPERTY_OVERRIDES +=                                          \
+    debug.sf.hw=1                                                      \
+    debug.gr.numframebuffers=3
 
-#PRODUCT_PROPERTY_OVERRIDES += \
+PRODUCT_PROPERTY_OVERRIDES += \
         net.dns1=8.8.8.8 \
         net.dns2=8.8.4.4
 
 # for hardware/libhardware/hardware.c "ro.product.board","ro.board.platform",
 PRODUCT_POLICY := android.policy_mid
+
+#$(call inherit-product-if-exists, hardware/broadcom/wlan/bcmdhd/firmware/bcm4324/device-bcm.mk)

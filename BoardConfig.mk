@@ -25,6 +25,8 @@
 # Product-specific compile-time definitions.
 #
 
+USE_LEGACY_AUDIO_POLICY := 1
+
 TARGET_CPU_ABI := mips
 TARGET_CPU_ABI2 := armeabi-v7a
 TARGET_CPU_SMP := true

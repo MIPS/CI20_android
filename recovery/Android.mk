@@ -1,5 +1,3 @@
-ifneq ($(filter ci20,$(TARGET_DEVICE)),)
-
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
@@ -11,5 +9,3 @@ LOCAL_SRC_FILES := recovery_ui.cpp
 LOCAL_MODULE := librecovery_ui_$(TARGET_DEVICE)
 
 include $(BUILD_STATIC_LIBRARY)
-
-endif
