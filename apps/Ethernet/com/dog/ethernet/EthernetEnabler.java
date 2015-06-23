@@ -26,7 +26,6 @@ import com.dog.ethernet.EthernetManager;
 public class EthernetEnabler {
     public static final String TAG = "SettingsEthEnabler";
 
-    private Context mContext;
     private EthernetManager mEthManager;
     private EthernetConfigDialog mEthConfigDialog;
     private EthernetAdvDialog mEthAdvancedDialog;
@@ -40,7 +39,6 @@ public class EthernetEnabler {
     }
 
     public EthernetEnabler(Context context) {
-        mContext = context;
         mEthManager = new EthernetManager(context);
 
         mEthManager.resetInterface();

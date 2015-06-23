@@ -42,7 +42,6 @@ public class EthernetConfigDialog extends AlertDialog implements
         DialogInterface.OnClickListener {
     private final String TAG = "EtherenetSettings";
     private static final boolean localLOGV = true;
-    private Context mContext;
     private EthernetEnabler mEthEnabler;
     private View mView;
     private Spinner mDevList;
@@ -56,7 +55,6 @@ public class EthernetConfigDialog extends AlertDialog implements
 
     public EthernetConfigDialog(Context context, EthernetEnabler Enabler) {
         super(context);
-        mContext = context;
         mEthEnabler = Enabler;
         buildDialogContent(context);
     }

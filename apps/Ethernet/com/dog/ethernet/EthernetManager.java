@@ -25,7 +25,6 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.util.Log;
 import android.content.Context;
-import android.net.EthernetDataTracker;
 import android.provider.Settings;
 import android.os.ServiceManager;
 import android.os.IBinder;
@@ -39,7 +38,7 @@ import android.net.NetworkInfo;
 import android.net.NetworkInfo.DetailedState;
 import android.net.LinkProperties;
 import android.net.InterfaceConfiguration;
-import android.net.ProxyProperties;
+import android.net.ProxyInfo;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
@@ -92,25 +91,22 @@ public class EthernetManager {
     /** @hide */
     public static final int DATA_ACTIVITY_INOUT        = 0x03;
 
-    private Context mContext;
     private String[] DevName;
     private int mEthState= ETHERNET_STATE_UNKNOWN;
-    private EthernetDataTracker mTracker;
     private INetworkManagementService mNMService;
     private DhcpInfo mDhcpInfo;
-    private Handler mTrackerTarget;
     private String mode;
     private String ip_address;
     private String dns_address;
     private ConnectivityManager mConMgr;
+    private SharedPreferences sp;
 
     public EthernetManager(Context context) {
-        mContext = context;
-        mTracker = EthernetDataTracker.getInstance();
+        sp = context.getSharedPreferences("ethernet", Context.MODE_WORLD_WRITEABLE);
 
         DevName = new String[1];
 
-        DevName[0] = "eth0";//mTracker.getLinkProperties().getInterfaceName();
+        DevName[0] = "eth0";
 
         mConMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         IBinder b = ServiceManager.getService(Context.NETWORKMANAGEMENT_SERVICE);
@@ -218,21 +214,26 @@ public class EthernetManager {
         String [] DevName = getDeviceNameList();
         infotemp.setIfName(DevName[0]);
         infotemp.setConnectMode(EthernetDevInfo.ETHERNET_CONN_MODE_DHCP);
-        String ip;
-        ip = mConMgr.getLinkProperties(ConnectivityManager.TYPE_ETHERNET).getAddresses().toString();
-        Log.d(TAG, "===========IP=" + ip);
-        if (ip != "[]" )
-            infotemp.setIpAddress(ip.substring(2, ip.length()-1));
-        String dns = " ";
-        int i = 0;
-        for( InetAddress d :
-                mConMgr.getLinkProperties(ConnectivityManager.TYPE_ETHERNET).getDnses()) {
-            String temp = d.toString();
-            if (temp != null)
-                dns = temp.substring(1, temp.length()-1);
-            break;
+
+        if(mConMgr.getLinkProperties(ConnectivityManager.TYPE_ETHERNET) != null) {
+            String ip = mConMgr.getLinkProperties(ConnectivityManager.TYPE_ETHERNET).getAddresses().toString();
+            Log.d(TAG, "===========IP=" + ip);
+            if (ip != "[]" ) {
+                infotemp.setIpAddress(ip.substring(2, ip.length()-1));
+            }
+            String dns = " ";
+            int i = 0;
+            for( InetAddress d :
+                    mConMgr.getLinkProperties(ConnectivityManager.TYPE_ETHERNET).getDnsServers()) {
+                String temp = d.toString();
+                if (temp != null) {
+                    dns = temp.substring(1, temp.length()-1);
+                }
+                break;
+            }
+            infotemp.setDnsAddr(dns);// now only use dns1, need optimization later here.
         }
-        infotemp.setDnsAddr(dns);// now only use dns1, need optimization later here.
+
         String proxyAddress = getSharedPreProxyAddress();
         String proxyPort = getSharedPreProxyPort();
         String proxyExclusionList=getSharedPreProxyExclusionList();
@@ -285,8 +286,6 @@ public class EthernetManager {
     }
 
     public SharedPreferences sharedPreferences(){
-        SharedPreferences sp = this.mContext.getSharedPreferences("ethernet",
-                Context.MODE_WORLD_WRITEABLE);
         return sp;
     }
 
@@ -373,7 +372,7 @@ public class EthernetManager {
             mConMgr.setGlobalProxy(null);
             return;
         }
-        LinkProperties lp = mTracker.getLinkProperties();
+        LinkProperties lp = mConMgr.getLinkProperties(ConnectivityManager.TYPE_ETHERNET);
         if (lp == null)
             return;
         int port = 0;
@@ -381,11 +380,11 @@ public class EthernetManager {
             port = Integer.parseInt(getSharedPreProxyPort());
         } catch(NumberFormatException e){
         }
-        ProxyProperties proxyProperties =
-            new ProxyProperties(getSharedPreProxyAddress(), port, exclusionList);
+        ProxyInfo proxyInfo =
+            new ProxyInfo(getSharedPreProxyAddress(), port, exclusionList);
         mConMgr.setGlobalProxy(null);
-        mConMgr.setGlobalProxy(proxyProperties);
-        Log.i(TAG,"=============getHttpProxy==============" + proxyProperties);
+        mConMgr.setGlobalProxy(proxyInfo);
+        Log.i(TAG,"=============getHttpProxy==============" + proxyInfo);
     }
 
     public void initProxy(){

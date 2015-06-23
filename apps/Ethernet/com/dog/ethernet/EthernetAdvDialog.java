@@ -18,7 +18,6 @@ package com.dog.ethernet;
 import android.net.ConnectivityManager;
 import android.net.Proxy;
 import android.net.LinkProperties;
-import android.net.ProxyProperties;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -37,19 +36,15 @@ public class EthernetAdvDialog extends AlertDialog implements DialogInterface.On
 
     private final String TAG = "EthernetAdvDialog";
     private static String Mode_dhcp = "dhcp";
-    private Context mContext;
     private EthernetEnabler mEthEnabler;
     private View mView;
     private EditText mProxyIp;
     private EditText mProxyPort;
     private EditText mProxyExclusionList;
     private LinkProperties mLinkProperties;
-    private ProxyProperties mHttpProxy;
-    private static ConnectivityManager sConnectivityManager = null;
 
     protected EthernetAdvDialog(Context context,EthernetEnabler Enabler) {
         super(context);
-        mContext = context;
         mEthEnabler = Enabler;
         LinkProperties mLinkProperties = new LinkProperties();
         buildDialogContent(context);
