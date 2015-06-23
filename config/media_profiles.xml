@@ -15,11 +15,13 @@
 -->
 <!DOCTYPE MediaSettings [
   <!ELEMENT MediaSettings (CamcorderProfiles,
-                         EncoderOutputFileFormat+,
-                         VideoEncoderCap+,
-                         AudioEncoderCap+,
-                         VideoDecoderCap,
-                         AudioDecoderCap)>
+                           EncoderOutputFileFormat+,
+                           VideoEncoderCap+,
+                           AudioEncoderCap+,
+                           VideoDecoderCap,
+                           AudioDecoderCap,
+                           VideoEditorCap,
+                           ExportVideoProfile+)>
   <!ELEMENT CamcorderProfiles (EncoderProfile+, ImageEncoding+, ImageDecoding, Camera)>
   <!ELEMENT EncoderProfile (Video, Audio)>
   <!ATTLIST EncoderProfile quality (cif|qcif|high|low) #REQUIRED>
@@ -56,7 +58,7 @@
   <!ATTLIST VideoEncoderCap minFrameRate CDATA #REQUIRED>
   <!ATTLIST VideoEncoderCap maxFrameRate CDATA #REQUIRED>
   <!ELEMENT AudioEncoderCap EMPTY>
-  <!ATTLIST AudioEncoderCap name (amrnb|amrwb|aac|wma) #REQUIRED>
+  <!ATTLIST AudioEncoderCap name (amrnb|amrwb|aac|heaac|aaceld|wma) #REQUIRED>
   <!ATTLIST AudioEncoderCap enabled (true|false) #REQUIRED>
   <!ATTLIST AudioEncoderCap minBitRate CDATA #REQUIRED>
   <!ATTLIST AudioEncoderCap maxBitRate CDATA #REQUIRED>
@@ -70,7 +72,17 @@
   <!ELEMENT AudioDecoderCap EMPTY>
   <!ATTLIST AudioDecoderCap name (wma) #REQUIRED>
   <!ATTLIST AudioDecoderCap enabled (true|false) #REQUIRED>
+  <!ATTLIST VideoEditorCap maxInputFrameWidth CDATA #REQUIRED>
+  <!ATTLIST VideoEditorCap maxInputFrameHeight CDATA #REQUIRED>
+  <!ATTLIST VideoEditorCap maxOutputFrameWidth CDATA #REQUIRED>
+  <!ATTLIST VideoEditorCap maxOutputFrameHeight CDATA #REQUIRED>
+  <!ATTLIST VideoEditorCap maxPrefetchYUVFrames CDATA #REQUIRED>
+  <!ELEMENT ExportVideoProfile EMPTY>
+  <!ATTLIST ExportVideoProfile name (h264|h263|m4v) #REQUIRED>
+  <!ATTLIST ExportVideoProfile profile CDATA #REQUIRED>
+  <!ATTLIST ExportVideoProfile level CDATA #REQUIRED>
 ]>
+
 <!--
      This file is used to declare the multimedia profiles and capabilities
      on an android-powered device.
