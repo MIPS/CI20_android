@@ -26,9 +26,14 @@ PRODUCT_COPY_FILES := \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/config/init.ci20.rc:root/init.ci20.rc \
     $(LOCAL_PATH)/config/init.ci20.usb.rc:root/init.ci20.usb.rc \
-    $(LOCAL_PATH)/config/fstab.ci20:root/fstab.ci20 \
     $(LOCAL_PATH)/config/ueventd.ci20.rc:root/ueventd.ci20.rc \
     $(LOCAL_PATH)/config/init.recovery.ci20.rc:root/init.recovery.ci20.rc
+
+ifeq ($(WITH_EXT4),true)
+PRODUCT_COPY_FILES += $(LOCAL_PATH)/config/fstab-ext4.ci20:root/fstab.ci20
+else
+PRODUCT_COPY_FILES += $(LOCAL_PATH)/config/fstab.ci20:root/fstab.ci20
+endif
 
 # Input device files
 PRODUCT_COPY_FILES += \

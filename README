@@ -8,7 +8,12 @@ Choose target.
     $ lunch aosp_ci20-userdebug
 
 Build everything.
+
+- UBIFS:
     $ make -j24
+
+- EXT4:
+    $ make WITH_EXT4=true -j24
 
 Generate an SDCARD image containing the Android compatible u-boot and
 Android boot/recovery/system images.

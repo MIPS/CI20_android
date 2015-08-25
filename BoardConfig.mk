@@ -38,7 +38,12 @@ ARCH_MIPS_PAGE_SHIFT := 12
 TARGET_NO_BOOTLOADER := true
 
 BOARD_KERNEL_BASE := 0x80F00000
-BOARD_KERNEL_CMDLINE := mem=256M@0x0 mem=752M@0x30000000 console=ttyS0,115200 ip=off rw rdinit=/init pmem_camera=16M@0x5f000000 ubi.mtd=1
+ifeq ($(WITH_EXT4),true)
+BOARD_KERNEL_CMDLINE := mem=256M@0x0 mem=752M@0x30000000 console=ttyS0,115200 ip=off rw rdinit=/init pmem_camera=16M@0x5f000000 androidboot.selinux=permissive
+else
+BOARD_KERNEL_CMDLINE := mem=256M@0x0 mem=752M@0x30000000 console=ttyS0,115200 ip=off rw rdinit=/init pmem_camera=16M@0x5f000000 ubi.mtd=1 selinux=0
+endif
+
 BOARD_MKBOOTIMG_ARGS := --kernel_offset 0
 
 BOARD_HAL_STATIC_LIBRARIES := libhealthd.ci20
@@ -124,6 +129,7 @@ TARGET_GLOBAL_CPPFLAGS += -DHAS_XB4780_HDMI
 endif
 endif
 
+ifneq ($(WITH_EXT4),true)
 # This assumes that INTERNAL_USERIMAGES_EXT_VARIANT (derived from TARGET_USERIMAGES_USE_EXT?) is set
 override define build-systemimage-target
   @echo "CI20 specific target system fs image: $(1)"
@@ -137,3 +143,4 @@ override define build-systemimage-target
   device/imgtec/ci20/sdcardinstaller/convert_extfs_to_ubifs $(1).$(INTERNAL_USERIMAGES_EXT_VARIANT) $(1)
   @echo "CI20 specific target system fs done"
 endef
+endif

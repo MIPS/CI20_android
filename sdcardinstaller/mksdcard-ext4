@@ -1,0 +1,158 @@
+#!/bin/bash
+#
+# Copyright (c) 2013,2014 Imagination Technologies
+# Original-Author: Paul Burton <paul.burton@imgtec.com>
+#
+# Writes u-boot and Android filesystems to the sd card.
+# Derived from the Debian setup script by Paul Burton
+#
+# Usage:
+#   ./mksdcard /dev/sdX
+#
+
+set -e
+tmpDir=`mktemp -d`
+
+cleanup()
+{
+  echo "Cleaning up..."
+  [ -z "${sdMount}" ] || sudo umount ${sdMount}
+  rm -rf ${tmpDir}
+  [ "${finished}" = "true" ] && sudo eject ${device} && echo "Cleanup completed; it is safe to remove your card"
+  trap - EXIT INT TERM
+}
+trap cleanup EXIT INT TERM
+
+die()
+{
+  echo "$@" >&2
+  exit 1
+}
+
+# check device
+device="$1"
+[ -e "${device}" ] || die "Device '${device}' not found"
+grep ${device} /etc/mtab >/dev/null && \
+  die "Device '${device}' contains mounted partitions"
+
+# check for Android images
+bootImg=${BOOTIMG:-${OUT}/boot.img}
+[ -e "${bootImg}" ] || die "Android boot image '${bootImg}' not found"
+recoveryImg=${RECOVERYIMG:-${OUT}/recovery.img}
+[ -e "${recoveryImg}" ] || die "Android recovery image '${recoveryImg}' not found"
+systemImg=${SYSTEMIMG:-${OUT}/system.img}
+[ -e "${systemImg}" ] || die "Android system image '${systemImg}' not found"
+
+# default environment
+[ ! -z "${CROSS_COMPILE}" ] || export CROSS_COMPILE=mips-linux-gnu-
+[ ! -z "${UBOOT_REPO}" ] || UBOOT_REPO="https://github.com/MIPS/CI20_u-boot"
+[ ! -z "${UBOOT_BRANCH}" ] || UBOOT_BRANCH="dev-mips-kitkat-v2013.10"
+
+if [ -z "${JOBS}" ]; then
+  cpuCount=`grep -Ec '^processor' /proc/cpuinfo`
+  JOBS=`echo "${cpuCount} * 2" | bc`
+fi
+
+# check for tools
+which bc >/dev/null || die "No bc in \$PATH"
+which sfdisk >/dev/null || die "No sfdisk in \$PATH"
+${CROSS_COMPILE}gcc --version >/dev/null 2>&1 || \
+  die "No ${CROSS_COMPILE}gcc, set \$CROSS_COMPILE"
+${CROSS_COMPILE}objcopy --version >/dev/null 2>&1 || \
+  die "No ${CROSS_COMPILE}objcopy, set \$CROSS_COMPILE"
+
+set +e
+sudo sfdisk ${device} -uM -L << EOF
+2,30
+32,700
+732,256
+988,2048
+EOF
+set -e
+sudo blockdev --rereadpt ${device}
+sudo partprobe ${device}
+
+partitions=("Boot" "System" "Cache" "Data")
+
+for((i=4; i>0; i--));
+do
+
+  if [ -e "$device$i" ]; then
+    part=${i}
+  elif [ -e "${device}p$" ]; then
+    part="p${i}"
+  fi
+
+  if [ $i -eq 2 ]; then
+    partSystem=${part}
+  fi
+
+  # create ext4 data partition
+  sudo mkfs.ext4 -L "${partitions[$i-1]}" ${device}${part}
+done
+
+# mount ext4 partition
+sdMount=${tmpDir}/sd_mount
+mkdir ${sdMount}
+sudo mount ${device}${part} ${sdMount}
+sudo chmod a+w ${sdMount}
+
+# clone u-boot
+ubootDir=$tmpDir/u-boot
+git clone ${UBOOT_REPO} -b ${UBOOT_BRANCH} --depth 1 $ubootDir
+
+# build & install MMC u-boot
+pushd $ubootDir
+  make distclean
+  make ci20_mmc_config
+  make -j${JOBS}
+  sudo dd if=spl/u-boot-spl.bin of=${device} obs=512 seek=1
+  sudo dd if=u-boot.img of=${device} obs=1K seek=14
+popd
+
+# copy Android boot image
+sudo cp -v ${bootImg} ${sdMount}/
+
+# copy Android recovery image
+sudo cp -v ${recoveryImg} ${sdMount}/
+
+envText=${tmpDir}/u-boot-env.txt
+envBin=${tmpDir}/u-boot-env.bin
+envSize=$((32 * 1024))
+
+# Command to boot Android from MMC
+androidInitCmd="ext4load mmc 0:1 0x88000000 boot.img; boota 0x88000000"
+
+echo "bootargs=${androidBootArgs}" >${envText}
+echo "ainitcmd=${androidInitCmd}" >>${envText}
+
+# FIXME: Decide what to do after completing the flash setup. For a
+# onetime setup image it's convenient to reset the bootcmd. When using
+# the same sdcard to install multiple times it is not
+oneTime=${ONETIME-false}
+if [ "${oneTime}" = "true" ]; then
+  # Initialise flash then switch to booting Android from MMC
+  echo "bootcmd=run ainitcmd; setenv bootcmd run abootcmd; saveenv" >>${envText}
+else
+  # Initialise flash
+  echo "bootcmd=run ainitcmd" >>${envText}
+fi
+
+echo
+echo "Please wait, writing system.img"
+
+sudo dd if=${systemImg} of=${device}${partSystem}
+
+echo
+echo "MMC U-boot environment:"
+cat ${envText}
+${ubootDir}/tools/mkenvimage -s ${envSize} -o ${envBin} ${envText}
+sudo dd if=${envBin} of=${device} obs=1 seek=$((526 * 1024))
+
+echo
+echo "SD contents:"
+ls -hl ${sdMount}/
+
+finished=true
+echo
+echo "Finished, wait for clean up before removing your card!"

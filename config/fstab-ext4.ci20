@@ -1,0 +1,12 @@
+#
+# device/imgtec/ci20/config/fstab.ci20
+# The filesystem that contains the filesystem checker binary (typically /system) cannot
+# specify MF_CHECK, and must come before any filesystems that do specify MF_CHECK
+#<src>                  <mnt_point>             <type>  <mnt_flags>   <fs_mgr
+
+/dev/block/mmcblk0p2             /system             ext4   ro            wait
+/dev/block/mmcblk0p3             /cache              ext4   defaults      wait, check
+/dev/block/mmcblk0p4             /data               ext4   defaults      wait, check
+
+/devices/platform/jz4780-dwc2/dwc2/usb1/1-1  auto    vfat    defaults      voldmanaged=usbdisk1:auto
+/devices/platform/jz-ehci.0/usb2/2-1         auto    vfat    defaults      voldmanaged=usbdisk2:auto
