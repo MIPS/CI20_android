@@ -68,7 +68,7 @@ ${CROSS_COMPILE}objcopy --version >/dev/null 2>&1 || \
 
 # partition SD/MMC card
 # Limit partition size to 1GB (uboot seems to have problems with large (>[24]GB?) filesystems
-# FIXME: sfdisk often fails to reread the partition information
+# FIXME: sfdisk often fails to reread the parition information
 set +e
 sudo sfdisk ${device} -uM -L << EOF
 2,1024,L
@@ -77,22 +77,13 @@ set -e
 sudo blockdev --rereadpt ${device}
 sudo partprobe ${device}
 
-# check first partition
-if [ -e "${device}1" ]; then
-	part=1
-elif [ -e "${device}p1" ]; then
-	part=p1
-else
-	die "Could not determine first partition of drive ${device}"
-fi
-
 # create ext3 partition
-sudo mkfs.ext3 -L "CI20_Android" ${device}${part}
+sudo mkfs.ext3 -L "CI20_Android" ${device}1
 
 # mount ext3 partition
 sdMount=${tmpDir}/sd_mount
 mkdir ${sdMount}
-sudo mount ${device}${part} ${sdMount}
+sudo mount ${device}1 ${sdMount}
 sudo chmod a+w ${sdMount}
 
 # clone u-boot
@@ -139,9 +130,9 @@ envBin=${tmpDir}/u-boot-env.bin
 envSize=$((32 * 1024))
 
 # generate NAND u-boot environment
-androidBootArgs="debug"
+androidBootArgs="debug mtdparts=jz4780-nand.0:20m(system-offset),-(system)"
 # Command to boot Android from NAND
-androidBootCmd="mtdparts default; ubi part system; ubi read 0x88000000 boot 0x800000; boota 0x88000000"
+androidBootCmd="setenv mtdparts mtdparts=nand:8m(uboot-spl),2m(uboot),2m(uboot-env),8m(boot),-(system); nand read 0x88000000 boot 0x600000; boota 0x88000000"
 
 echo "bootargs=${androidBootArgs}" >${envText}
 echo "abootcmd=${androidBootCmd}" >>${envText}
@@ -158,23 +149,21 @@ androidInitCmd="mw.l 0xb0010548 0x8000; \
 nand erase.chip; \
 ext4load mmc 0:1 0x80000000 u-boot-spl.bin; \
 writespl 0x80000000 8; \
+setenv mtdparts mtdparts=nand:8m(uboot-spl),2m(uboot),2m(uboot-env),8m(boot),-(system); \
 ext4load mmc 0:1 0x80000000 u-boot.img; \
 nand write 0x80000000 0x800000 0x80000; \
-mtdparts default; \
 ext4load mmc 0:1 0x80000000 u-boot-env.bin; \
 nand write 0x80000000 0x00a00000 ${envSize}; \
+ext4load mmc 0:1 0x80000000 boot.img; \
+nand write 0x80000000 boot ${bootImgSizeHex}; \
 ubi part system; \
-ubi create boot 0x800000; \
 ubi create recovery 0x800000; \
 ubi create system 0x28000000; \
 ubi create cache 0x10000000; \
 ubi create data 0x100000000; \
-ext4load mmc 0:1 0x80000000 boot.img; \
-ubi write 0x80000000 boot ${bootImgSizeHex}; \
 ext4load mmc 0:1 0x80000000 recovery.img; \
 ubi write 0x80000000 recovery ${recoveryImgSizeHex}; \
 run flash_system0"
-androidBootArgs="debug"
 # Command to boot Android from MMC
 androidBootCmd="ext4load mmc 0:1 0x88000000 boot.img; boota 0x88000000"
 
