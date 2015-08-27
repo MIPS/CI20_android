@@ -46,7 +46,7 @@ systemImg=${SYSTEMIMG:-${OUT}/system.img}
 # default environment
 [ ! -z "${CROSS_COMPILE}" ] || export CROSS_COMPILE=mips-linux-gnu-
 [ ! -z "${UBOOT_REPO}" ] || UBOOT_REPO="https://github.com/MIPS/CI20_u-boot"
-[ ! -z "${UBOOT_BRANCH}" ] || UBOOT_BRANCH="dev-mips-kitkat-v2013.10"
+[ ! -z "${UBOOT_BRANCH}" ] || UBOOT_BRANCH="ci20-v2013.10"
 
 if [ -z "${JOBS}" ]; then
   cpuCount=`grep -Ec '^processor' /proc/cpuinfo`
@@ -125,6 +125,10 @@ androidInitCmd="ext4load mmc 0:1 0x88000000 boot.img; boota 0x88000000"
 
 echo "bootargs=${androidBootArgs}" >${envText}
 echo "ainitcmd=${androidInitCmd}" >>${envText}
+echo "baudrate=115200" >>${envText}
+echo "stderr=eserial0,eserial4" >>${envText}
+echo "stdin=eserial0,eserial4" >>${envText}
+echo "stdout=eserial0,eserial4" >>${envText}
 
 # FIXME: Decide what to do after completing the flash setup. For a
 # onetime setup image it's convenient to reset the bootcmd. When using
