@@ -51,7 +51,7 @@ file -b "${systemImg}" | grep -q '^data$' || \
 # default environment
 [ ! -z "${CROSS_COMPILE}" ] || export CROSS_COMPILE=mips-linux-gnu-
 [ ! -z "${UBOOT_REPO}" ] || UBOOT_REPO="https://github.com/MIPS/CI20_u-boot"
-[ ! -z "${UBOOT_BRANCH}" ] || UBOOT_BRANCH="dev-mips-kitkat-v2013.10"
+[ ! -z "${UBOOT_BRANCH}" ] || UBOOT_BRANCH="ci20-v2013.10"
 
 if [ -z "${JOBS}" ]; then
   cpuCount=`grep -Ec '^processor' /proc/cpuinfo`
@@ -137,6 +137,10 @@ androidBootCmd="setenv mtdparts mtdparts=nand:8m(uboot-spl),2m(uboot),2m(uboot-e
 echo "bootargs=${androidBootArgs}" >${envText}
 echo "abootcmd=${androidBootCmd}" >>${envText}
 echo "bootcmd=run abootcmd" >>${envText}
+echo "baudrate=115200" >>${envText}
+echo "stderr=eserial0,eserial4" >>${envText}
+echo "stdin=eserial0,eserial4" >>${envText}
+echo "stdout=eserial0,eserial4" >>${envText}
 
 echo
 echo "NAND U-boot environment:"
@@ -170,6 +174,10 @@ androidBootCmd="ext4load mmc 0:1 0x88000000 boot.img; boota 0x88000000"
 echo "bootargs=${androidBootArgs}" >${envText}
 echo "abootcmd=${androidBootCmd}" >>${envText}
 echo "ainitcmd=${androidInitCmd}" >>${envText}
+echo "baudrate=115200" >>${envText}
+echo "stderr=eserial0,eserial4" >>${envText}
+echo "stdin=eserial0,eserial4" >>${envText}
+echo "stdout=eserial0,eserial4" >>${envText}
 
 # FIXME: Decide what to do after completing the flash setup. For a
 # onetime setup image it's convenient to reset the bootcmd. When using
