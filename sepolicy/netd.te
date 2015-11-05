@@ -1,0 +1,2 @@
+#============= netd.te ==============
+dontaudit netd self:capability sys_module;
