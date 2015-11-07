@@ -28,7 +28,7 @@
 USE_LEGACY_AUDIO_POLICY := 1
 
 TARGET_CPU_ABI := mips
-TARGET_CPU_ABI2 := armeabi-v7a
+TARGET_CPU_ABI2 := mips
 TARGET_CPU_SMP := true
 TARGET_ARCH := mips
 TARGET_ARCH_VARIANT := mips32r2-fp-xburst
@@ -39,7 +39,7 @@ TARGET_NO_BOOTLOADER := true
 
 BOARD_KERNEL_BASE := 0x80F00000
 ifeq ($(WITH_EXT4),true)
-BOARD_KERNEL_CMDLINE := mem=256M@0x0 mem=752M@0x30000000 console=ttyS0,115200 ip=off rw rdinit=/init pmem_camera=16M@0x5f000000 androidboot.selinux=permissive
+BOARD_KERNEL_CMDLINE := mem=256M@0x0 mem=752M@0x30000000 console=ttyS0,115200 ip=off rw rdinit=/init pmem_camera=16M@0x5f000000 androidboot.hardware=ci20
 else
 BOARD_KERNEL_CMDLINE := mem=256M@0x0 mem=752M@0x30000000 console=ttyS0,115200 ip=off rw rdinit=/init pmem_camera=16M@0x5f000000 ubi.mtd=1 selinux=0
 endif
@@ -128,6 +128,9 @@ TARGET_GLOBAL_CFLAGS += -DHAS_XB4780_HDMI
 TARGET_GLOBAL_CPPFLAGS += -DHAS_XB4780_HDMI
 endif
 endif
+
+BOARD_SEPOLICY_DIRS += \
+	device/imgtec/ci20/sepolicy
 
 ifneq ($(WITH_EXT4),true)
 # This assumes that INTERNAL_USERIMAGES_EXT_VARIANT (derived from TARGET_USERIMAGES_USE_EXT?) is set

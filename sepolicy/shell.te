@@ -1,0 +1,3 @@
+#============= shell.te ==============
+allow shell device:dir { read open };
+allow shell usb_device:dir read;

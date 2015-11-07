@@ -1,0 +1,3 @@
+#============= untrusted_app.te ==============
+allow untrusted_app proc_sysrq:file getattr;
+

@@ -1,0 +1,10 @@
+##### file_contexts
+/dev/cim			u:object_r:camera_device:s0
+/dev/dmmu			u:object_r:gpu_device:s0
+/dev/ipu0			u:object_r:gpu_device:s0
+/dev/ipu1			u:object_r:gpu_device:s0
+/dev/jz-vpu			u:object_r:video_device:s0
+/dev/pvr_sync			u:object_r:gpu_device:s0
+/dev/ttyS2			u:object_r:serial_device:s0
+
+/system/vendor/bin/pvrsrvctl    u:object_r:pvrsrvctl_exec:s0
