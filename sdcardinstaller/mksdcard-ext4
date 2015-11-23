@@ -64,9 +64,9 @@ ${CROSS_COMPILE}objcopy --version >/dev/null 2>&1 || \
 set +e
 sudo sfdisk ${device} -uM -L << EOF
 2,30
-32,700
-732,256
-988,2048
+32,750
+782,256
+1038,2048
 EOF
 set -e
 sudo blockdev --rereadpt ${device}
