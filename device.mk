@@ -154,6 +154,11 @@ PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/config/bt_vendor.conf:system/etc/bluetooth/bt_vendor.conf                         \
 	$(LOCAL_PATH)/config/zram.sh:system/etc/zram.sh
 
+# Magiccode libakim
+PRODUCT_COPY_FILES += \
+        $(LOCAL_PATH)/akim/libakim.so:/system/vendor/lib/libakim.so \
+        $(LOCAL_PATH)/akim/magiccode_prefs.xml:/data/system/magiccode_prefs.xml
+
 #
 # Copy H263/MPEG4 firmware
 #
