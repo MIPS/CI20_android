@@ -122,10 +122,12 @@ envSize=$((32 * 1024))
 
 # Command to boot Android from MMC
 androidInitCmd="ext4load mmc 0:1 0x88000000 boot.img; boota 0x88000000"
+# Command to set device specific MAC address
+ethArgs='env set bootargs ${bootargs} dm9000.mac_addr=${ethaddr}'
 
-echo "bootargs=${androidBootArgs}" >${envText}
 echo "ainitcmd=${androidInitCmd}" >>${envText}
 echo "baudrate=115200" >>${envText}
+echo "ethargs=${ethArgs}" >>${envText}
 echo "stderr=eserial0,eserial4" >>${envText}
 echo "stdin=eserial0,eserial4" >>${envText}
 echo "stdout=eserial0,eserial4" >>${envText}
@@ -139,7 +141,7 @@ if [ "${oneTime}" = "true" ]; then
   echo "bootcmd=run ainitcmd; setenv bootcmd run abootcmd; saveenv" >>${envText}
 else
   # Initialise flash
-  echo "bootcmd=run ainitcmd" >>${envText}
+  echo "bootcmd=run ethargs; run ainitcmd" >>${envText}
 fi
 
 echo
