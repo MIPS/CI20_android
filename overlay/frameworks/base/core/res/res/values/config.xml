@@ -10,6 +10,10 @@
          autodetected from the Configuration. -->
     <bool name="config_showNavigationBar">true</bool>
 
+    <!-- Setting this true forces the headset jack switches to use the/dev/input/event subsystem
+         rather than the uevent framework. -->
+    <bool name="config_useDevInputEventForAudioJack">true</bool>
+
        <!-- The network types we support -->
         <string-array translatable="false" name="networkAttributes">
 		<item>"wifi,1,1,1,-1,true"</item>
