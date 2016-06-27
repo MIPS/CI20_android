@@ -1,0 +1,36 @@
+<mixer>
+  <ctl name="Master Playback Volume" value="30" />
+  <ctl name="Master Playback Switch" value="1" />
+
+  <ctl name="Headphone Playback Volume" value="15" />
+  <ctl name="Headphone Playback Switch" value="1" />
+
+  <ctl name="Master Capture Volume" value="15" />
+  <ctl name="Mic Capture Volume" value="6" />
+  <ctl name="Mic Capture Switch" value="1" />
+  <ctl name="ADC Capture Route" value="AIP2" />
+
+  <path name="hdmi">
+    <ctl name="Headphone Playback Volume" value="0" />
+    <ctl name="Headphone Playback Switch" value="0" />
+
+    <ctl name="Mic Capture Volume" value="0" />
+    <ctl name="Mic Capture Switch" value="0" />
+  </path>
+
+  <path name="headphone">
+    <ctl name="Headphone Playback Volume" value="15" />
+    <ctl name="Headphone Playback Switch" value="1" />
+
+    <ctl name="Mic Capture Volume" value="0" />
+    <ctl name="Mic Capture Switch" value="0" />
+  </path>
+
+  <path name="headset-mic">
+    <ctl name="Headphone Playback Volume" value="15" />
+    <ctl name="Headphone Playback Switch" value="1" />
+
+    <ctl name="Mic Capture Volume" value="6" />
+    <ctl name="Mic Capture Switch" value="1" />
+  </path>
+</mixer>
