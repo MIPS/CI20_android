@@ -2,3 +2,6 @@
 allow init self:capability sys_module;
 allow init tmpfs:lnk_file create;
 
+# ConfigFS support sepolicy permissions
+allow init configfs:dir create_dir_perms;
+allow init configfs:{ file lnk_file } create_file_perms;

@@ -1,0 +1,2 @@
+# Configfs /config
+type configfs, fs_type;
