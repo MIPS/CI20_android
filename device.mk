@@ -37,18 +37,18 @@ endif
 
 # Input device files
 PRODUCT_COPY_FILES += \
-	$(LOCAL_PATH)/config/gpio-keys.kl:/system/usr/keylayout/gpio-keys.kl
+    $(LOCAL_PATH)/config/gpio-keys.kl:/system/usr/keylayout/gpio-keys.kl
 
 # Audio policy
 PRODUCT_COPY_FILES += \
-	$(LOCAL_PATH)/config/audio_policy.conf:system/etc/audio_policy.conf
+    $(LOCAL_PATH)/config/audio_policy.conf:system/etc/audio_policy.conf
 
 # Media Codecs
 PRODUCT_COPY_FILES += \
-	$(LOCAL_PATH)/config/media_profiles.xml:system/etc/media_profiles.xml \
-        frameworks/av/media/libstagefright/data/media_codecs_google_audio.xml:system/etc/media_codecs_google_audio.xml \
-        frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:system/etc/media_codecs_google_video.xml \
-	$(LOCAL_PATH)/config/media_codecs.xml:system/etc/media_codecs.xml
+    $(LOCAL_PATH)/config/media_profiles.xml:system/etc/media_profiles.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_audio.xml:system/etc/media_codecs_google_audio.xml \
+    frameworks/av/media/libstagefright/data/media_codecs_google_video.xml:system/etc/media_codecs_google_video.xml \
+    $(LOCAL_PATH)/config/media_codecs.xml:system/etc/media_codecs.xml
 
 # These are the hardware-specific features
 PRODUCT_COPY_FILES += \
@@ -60,7 +60,7 @@ PRODUCT_COPY_FILES += \
 
 
 
-#FIXME: set PRODUCT_AAPT_CONFIG? Eg: 
+#FIXME: set PRODUCT_AAPT_CONFIG? Eg:
 ## # This device is xhdpi.  However the platform doesn't
 ## # currently contain all of the bitmaps at xhdpi density so
 ## # we do this little trick to fall back to the hdpi version
@@ -74,19 +74,20 @@ PRODUCT_CHARACTERISTICS := tablet
 #
 DEVICE_PACKAGE_OVERLAYS += device/imgtec/ci20/overlay
 
-PRODUCT_PACKAGES := 	\
-    mke2fs          	\
-    mke2fs_host     	\
-    e2fsck          	\
-    e2fsck_host     	\
-    setup_fs	    	\
-    updater	    	\
+PRODUCT_PACKAGES :=     \
+    mke2fs              \
+    mke2fs_host         \
+    e2fsck              \
+    e2fsck_host         \
+    setup_fs            \
+    updater             \
     libnand_utils       \
     burner              \
     guidance            \
-    busybox
+    busybox             \
+    libdrm
 
-PRODUCT_PACKAGES += 	\
+PRODUCT_PACKAGES +=     \
     ethernet
 
 PRODUCT_PACKAGES +=      \
@@ -139,9 +140,9 @@ $(call inherit-product, hardware/ingenic/xb4780/libGPU/gpu.mk)
 # Prebuilt WiFi drivers and firmware
 #
 PRODUCT_COPY_FILES += \
-	$(LOCAL_PATH)/wifi.iw8103/IW/bcm4330/fw_bcm4330b2.bin:system/lib/wifi/firmware/iw810X/fw_bcmdhd.bin \
-        $(LOCAL_PATH)/wifi.iw8103/IW/bcm4330/nv_4330b2.txt:system/lib/wifi/firmware/iw810X/nvram_iw810X.txt \
-        $(LOCAL_PATH)/wifi.iw8103/IW/bcm4330/TestRelease_BCM4330_0243.0000_Alltek_AW70_37p4M.hcd:system/etc/firmware/bcm4330/BCM4330.hcd
+    $(LOCAL_PATH)/wifi.iw8103/IW/bcm4330/fw_bcm4330b2.bin:system/lib/wifi/firmware/iw810X/fw_bcmdhd.bin \
+    $(LOCAL_PATH)/wifi.iw8103/IW/bcm4330/nv_4330b2.txt:system/lib/wifi/firmware/iw810X/nvram_iw810X.txt \
+    $(LOCAL_PATH)/wifi.iw8103/IW/bcm4330/TestRelease_BCM4330_0243.0000_Alltek_AW70_37p4M.hcd:system/etc/firmware/bcm4330/BCM4330.hcd
 
 # FIXME: TODO
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -151,15 +152,15 @@ PRODUCT_PROPERTY_OVERRIDES += \
     testing.mediascanner.skiplist=/storage/host-udisk/,/storage/udisk/
 
 PRODUCT_COPY_FILES += \
-	$(LOCAL_PATH)/config/excluded-input-devices.xml:system/etc/excluded-input-devices.xml  	        \
-	$(LOCAL_PATH)/config/bt_addr:system/etc/firmware/bcm4330/bt_addr                                \
-	$(LOCAL_PATH)/config/bt_vendor.conf:system/etc/bluetooth/bt_vendor.conf                         \
-	$(LOCAL_PATH)/config/zram.sh:system/etc/zram.sh
+    $(LOCAL_PATH)/config/excluded-input-devices.xml:system/etc/excluded-input-devices.xml           \
+    $(LOCAL_PATH)/config/bt_addr:system/etc/firmware/bcm4330/bt_addr                                \
+    $(LOCAL_PATH)/config/bt_vendor.conf:system/etc/bluetooth/bt_vendor.conf                         \
+    $(LOCAL_PATH)/config/zram.sh:system/etc/zram.sh
 
 # Magiccode libakim
 PRODUCT_COPY_FILES += \
-        $(LOCAL_PATH)/akim/libakim.so:/system/vendor/lib/libakim.so \
-        $(LOCAL_PATH)/akim/magiccode_prefs.xml:/data/system/magiccode_prefs.xml
+    $(LOCAL_PATH)/akim/libakim.so:/system/vendor/lib/libakim.so \
+    $(LOCAL_PATH)/akim/magiccode_prefs.xml:/data/system/magiccode_prefs.xml
 
 #
 # Copy H263/MPEG4 firmware
@@ -188,7 +189,7 @@ $(call inherit-product-if-exists, frameworks/base/data/keyboards/keyboards.mk)
 
 PRODUCT_PROPERTY_OVERRIDES +=                                           \
     ro.debuggable=1                                                     \
-    service.adb.root=1							\
+    service.adb.root=1                                                  \
     persist.service.adb.enable=1
 
 
@@ -197,7 +198,7 @@ PRODUCT_PROPERTY_OVERRIDES +=    \
     mobiled.libpath=/system/lib/libmobiled.so
 
 # FIXME: needed?
-#PRODUCT_PROPERTY_OVERRIDES +=                                           \
+#PRODUCT_PROPERTY_OVERRIDES +=                                          \
 #     ro.board.hdmi.support=true                                        \
 #     ro.board.hdmi.device=HDMI,LCD,SYNC                                \
 #     ro.board.hdmi.hotplug.support=true                                \
@@ -212,8 +213,8 @@ PRODUCT_PROPERTY_OVERRIDES +=                                          \
     debug.gr.numframebuffers=3
 
 PRODUCT_PROPERTY_OVERRIDES += \
-        net.dns1=8.8.8.8 \
-        net.dns2=8.8.4.4
+    net.dns1=8.8.8.8 \
+    net.dns2=8.8.4.4
 
 # for hardware/libhardware/hardware.c "ro.product.board","ro.board.platform",
 PRODUCT_POLICY := android.policy_mid
