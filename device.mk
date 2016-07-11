@@ -144,8 +144,8 @@ $(call inherit-product, hardware/ingenic/xb4780/libGPU/gpu.mk)
 # Prebuilt WiFi drivers and firmware
 #
 PRODUCT_COPY_FILES += \
-	$(LOCAL_PATH)/wifi.iw8103/IW/bcm4330/fw_bcm4330b2.bin:system/lib/wifi/firmware/iw810X/fw_bcmdhd.bin \
-        $(LOCAL_PATH)/wifi.iw8103/IW/bcm4330/nv_4330b2.txt:system/lib/wifi/firmware/iw810X/nvram_iw810X.txt \
+        $(LOCAL_PATH)/wifi.iw8103/IW/bcm4330/fw_bcm4330b2.bin:system/etc/firmware/brcm/brcmfmac4330-sdio.bin \
+        $(LOCAL_PATH)/wifi.iw8103/IW/bcm4330/nv_4330b2.txt:system/etc/firmware/brcm/brcmfmac4330-sdio.txt \
         $(LOCAL_PATH)/wifi.iw8103/IW/bcm4330/TestRelease_BCM4330_0243.0000_Alltek_AW70_37p4M.hcd:system/etc/firmware/bcm4330/BCM4330.hcd
 
 # FIXME: TODO
