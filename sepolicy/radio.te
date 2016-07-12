@@ -1,0 +1,2 @@
+#============= radio ==============
+allow radio self:process ptrace;
