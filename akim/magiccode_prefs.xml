@@ -47,6 +47,7 @@
 <apk PackageName="com.clearchannel.iheartradio.controller" version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.cmge.xyykp.baidu"                 version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.crisisfire.android.baidu"         version="" first="armeabi-v7a" second="" third="" features="neon" />
+<apk PackageName="com.crowdstar.covetfashion"           version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.ct.dxggj.qcplay.DK.baidu"         version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.dayhr"                            version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.dena.west.TransformersBattleTactics" version="" first="armeabi-v7a" second="" third="" features="neon" />
@@ -71,6 +72,8 @@
 <apk PackageName="com.gtp.nextlauncher"                 version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.hantai.voyager"                   version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.hongwu.hongwu"                    version="" first="armeabi-v7a" second="" third="" features="neon" />
+<apk PackageName="com.hope.yunmendianthree"             version="" first="armeabi-v7a" second="" third="" features="neon" />
+<apk PackageName="com.hotune.runfortime.baidu"          version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.hulaoo"                           version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.hummingbird.zhaoqin.aboluohd.dj"  version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.hydg.game.huanliu.dk.baidu"       version="" first="armeabi-v7a" second="" third="" features="neon" />
@@ -90,6 +93,7 @@
 <apk PackageName="com.kiloo.subwaysurf"                 version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.king.candycrushsaga"              version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.king.farmheroessaga"              version="" first="armeabi-v7a" second="" third="" features="neon" />
+<apk PackageName="com.koramgame.ggplay.elsword"         version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.kplus.car"                        version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.laurencedawson.reddit_sync"       version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.libii.royalpuppy"                 version="" first="armeabi-v7a" second="" third="" features="neon" />
@@ -97,6 +101,7 @@
 <apk PackageName="com.ljf.mhsg.baidu"                   version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.ludia.jurassicworld"              version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.lykj.gfdx.bd"                     version="" first="armeabi-v7a" second="" third="" features="neon" />
+<apk PackageName="com.lyun.user"                        version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.magicred.kuaiLeKuBao2.bd"         version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.meitu.meipaimv"                   version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.meitu.meiyancamera"               version="" first="armeabi-v7a" second="" third="" features="neon" />
@@ -107,6 +112,7 @@
 <apk PackageName="com.mobage.ww.a1933.Super_Battle_Tactics_Android" version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.mobimirage.rzfb.baidu"            version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.mojang.minecraftpe"               version="" first="armeabi-v7a" second="" third="" features="neon" />
+<apk PackageName="com.mt.mtxx.mtxx"                     version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.mxtech.videoplayer.ad"            version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.myfitnesspal.android"             version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.naturalmotion.clumsyninja"        version="" first="armeabi-v7a" second="" third="" features="neon" />
@@ -133,6 +139,7 @@
 <apk PackageName="com.rebelvox.voxer"                   version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.reliancegames.drones"             version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.reliancegames.rschampions"        version="" first="armeabi-v7a" second="" third="" features="neon" />
+<apk PackageName="com.rhapsody"                         version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.rovio.baba"                       version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.rovio.baba.kunlun.baidu"          version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.rovio.lrocks"                     version="" first="armeabi-v7a" second="" third="" features="neon" />
@@ -143,6 +150,7 @@
 <apk PackageName="com.shazam.encore.android"            version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.siliuyi.menfeigamede"             version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.sina.news"                        version="" first="armeabi-v7a" second="" third="" features="neon" />
+<apk PackageName="com.sino.app.advancedA11558"          version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.sino.app.advancedA79427"          version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.slcs.game.dk.baidu"               version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.somafm"                           version="" first="armeabi-v7a" second="" third="" features="neon" />
@@ -153,6 +161,7 @@
 <apk PackageName="com.tencent.game.SSGame"              version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.textmeinc.textme"                 version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.think.game.selfhy.nd91"           version="" first="armeabi-v7a" second="" third="" features="neon" />
+<apk PackageName="com.threeminutegames.lifelinewhiteoutgoog" version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.tjbt.game.dk.baidu"               version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.tribe.papapa.baidu"               version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.tsplay.woyufengshen.baidu"        version="" first="armeabi-v7a" second="" third="" features="neon" />
@@ -170,6 +179,7 @@
 <apk PackageName="com.wlfb.game.dk.baidu"               version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.woyaou"                           version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.wswy.carzs"                       version="" first="armeabi-v7a" second="" third="" features="neon" />
+<apk PackageName="com.wyh.yjzt.baidu"                   version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.xiandanjia.android"               version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.xlingmao.maomeng"                 version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.xtjj.game.huanliu.dk.baidu"       version="" first="armeabi-v7a" second="" third="" features="neon" />
@@ -177,6 +187,7 @@
 <apk PackageName="com.xvideostudio.videoeditorpro"      version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.yodo1.crossyroad"                 version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.youai.qile.KingOfTower.qitian.baidu" version="" first="armeabi-v7a" second="" third="" features="neon" />
+<apk PackageName="com.youai.qile.sgqytf.a.a.baidu"      version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.youku.phone"                      version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.yydisssdeidaad.cn"                version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.yyy.shejipaopaolong"              version="" first="armeabi-v7a" second="" third="" features="neon" />
@@ -189,6 +200,7 @@
 <apk PackageName="com.zynga.wonka"                      version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="com.zzwanbao"                         version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="es.socialpoint.DragonCity"            version="" first="armeabi-v7a" second="" third="" features="neon" />
+<apk PackageName="es.socialpoint.MonsterLegends"        version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="net.zhuoweizhang.mcpelauncher"        version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="net.zhuoweizhang.mcpelauncher.pro"    version="" first="armeabi-v7a" second="" third="" features="neon" />
 <apk PackageName="org.cocos2d.fishingjoy3.ck.duoku"     version="" first="armeabi-v7a" second="" third="" features="neon" />
@@ -204,12 +216,15 @@
 <apk PackageName="cn.kuwo.player"                       version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="cn.mobileapp.service.cdtjw"           version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="cn.ssbaidu.opensudoku"                version="" first="armeabi" second="armeabi-v7a" third="" features="" />
+<apk PackageName="cn.xlgame.xlddz.baidu"                version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="cn.zhangzong.newpopem.hyc"            version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="co.happybits.anyvideo.kik"            version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="co.triller.droid"                     version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.DBGame.DiabloLOL.baidu"           version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.android.cczbaidu"                 version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.android.cheyooh"                  version="" first="armeabi" second="armeabi-v7a" third="" features="" />
+<apk PackageName="com.appxy.tinyscan"                   version="" first="armeabi" second="armeabi-v7a" third="" features="" />
+<apk PackageName="com.app.skzq"                         version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.baidu.homework"                   version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.baidu.video"                      version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.bcv.dfhg.jihjklsuh.gfugdgyhu"     version="" first="armeabi" second="armeabi-v7a" third="" features="" />
@@ -221,6 +236,7 @@
 <apk PackageName="com.brianbaek.popstar"                version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.camelgames.ninjian"               version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.chase.sig.android"                version="" first="armeabi" second="armeabi-v7a" third="" features="" />
+<apk PackageName="com.chenghui.jiaxiao.campus"          version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.chinaideal.bkclient.tabmain"      version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.crazyhornets.MyHokageAndroid91"   version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.cubic.autohome"                   version="" first="armeabi" second="armeabi-v7a" third="" features="" />
@@ -231,6 +247,8 @@
 <apk PackageName="com.famousbluemedia.piano"            version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.gameley.runningman3.baidu"        version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.gift.android"                     version="" first="armeabi" second="armeabi-v7a" third="" features="" />
+<apk PackageName="com.giphy.messenger"                  version="" first="armeabi" second="armeabi-v7a" third="" features="" />
+<apk PackageName="com.gzwz.jufengzhanhun.bd"            version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.halfbrick.fruitninja"             version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.haodou.recipe"                    version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.happyelements.AndroidAnimal"      version="" first="armeabi" second="armeabi-v7a" third="" features="" />
@@ -249,6 +267,8 @@
 <apk PackageName="com.lilysgame.weather"                version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.mas.wawagame.BDDKlord"            version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.mas.wawagame.BDDKjjlordDJ"        version="" first="armeabi" second="armeabi-v7a" third="" features="" />
+<apk PackageName="com.mas.wawagame.BDDKjjlordDJZS"      version="" first="armeabi" second="armeabi-v7a" third="" features="" />
+<apk PackageName="com.mas.wawagame.BDDKjjlordHL"        version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.md.Forzen.BD"                     version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.millionhero.x6.wjjs.DK.BD"        version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.neusoft.td.android.wo116114"      version="" first="armeabi" second="armeabi-v7a" third="" features="" />
@@ -287,7 +307,7 @@
 <apk PackageName="com.yiche.price"                      version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.yiwang"                           version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.yoloho.dayima"                    version="" first="armeabi" second="armeabi-v7a" third="" features="" />
-<apk PackageName="com.youmeng.huluwa.baidu"             version="" first="armeabi" second="armeabi-v7a" third="" features="" />
+<apk PackageName="com.youmeng.huluwa.baidu"             version="" first="armeabi" second="armeabi-v7a" third="" features="neon" />
 <apk PackageName="com.zhiliaoapp.musically"             version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.zj_lab.fireworks3.baidu"          version="" first="armeabi" second="armeabi-v7a" third="" features="" />
 <apk PackageName="com.ztgame.ztmobiletest.baidu"        version="" first="armeabi" second="armeabi-v7a" third="" features="" />
