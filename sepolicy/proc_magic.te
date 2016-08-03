@@ -8,3 +8,7 @@ allow zygote app_data_file:dir { search getattr };
 allow zygote app_data_file:lnk_file { read getattr };
 allow zygote system_app_data_file:dir { search getattr };
 allow zygote system_app_data_file:lnk_file { read getattr };
+allow zygote bluetooth_data_file:dir { search getattr };
+allow zygote bluetooth_data_file:lnk_file { read getattr };
+allow zygote radio_data_file:dir { search getattr };
+allow zygote radio_data_file:lnk_file { read getattr };
