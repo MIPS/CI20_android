@@ -43,6 +43,10 @@ PRODUCT_COPY_FILES += \
 PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/config/audio_policy.conf:system/etc/audio_policy.conf
 
+# ALSA mixer controls
+PRODUCT_COPY_FILES += \
+	$(LOCAL_PATH)/config/mixer_paths.xml:system/etc/mixer_paths.xml
+
 # Media Codecs
 PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/config/media_profiles.xml:system/etc/media_profiles.xml \
