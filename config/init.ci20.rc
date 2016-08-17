@@ -48,15 +48,6 @@ on post-fs-data
     mkdir /data/misc/wifi/sockets 0777 wifi wifi
     mkdir /data/system 1775 system system
 
-    chown system system /sys/class/android_usb/android0/f_mass_storage/lun0/file
-    chmod 0660 /sys/class/android_usb/android0/f_mass_storage/lun0/file
-    chown system system /sys/class/android_usb/android0/f_mass_storage/lun1/file
-    chmod 0660 /sys/class/android_usb/android0/f_mass_storage/lun1/file
-    chown system system /sys/class/android_usb/android0/f_mass_storage/lun2/file
-    chmod 0660 /sys/class/android_usb/android0/f_mass_storage/lun2/file
-    chown system system /sys/class/android_usb/android0/f_rndis/ethaddr
-    chmod 0660 /sys/class/android_usb/android0/f_rndis/ethaddr
-
     # Set indication (checked by vold) that we have finished this action
     setprop vold.post_fs_data_done 1
 
