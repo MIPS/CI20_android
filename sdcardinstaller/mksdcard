@@ -130,9 +130,9 @@ envBin=${tmpDir}/u-boot-env.bin
 envSize=$((32 * 1024))
 
 # generate NAND u-boot environment
-androidBootArgs="debug mtdparts=jz4780-nand.0:20m(system-offset),-(system)"
+androidBootArgs="debug mtdparts=jz4780-nand:28m(system-offset),-(system)"
 # Command to boot Android from NAND
-androidBootCmd="setenv mtdparts mtdparts=nand:8m(uboot-spl),2m(uboot),2m(uboot-env),8m(boot),-(system); nand read 0x88000000 boot 0x600000; boota 0x88000000"
+androidBootCmd="setenv mtdparts mtdparts=nand:8m(uboot-spl),2m(uboot),2m(uboot-env),16m(boot),-(system); nand read 0x88000000 boot ${bootImgSizeHex}; boota 0x88000000"
 # Command to set device specific MAC address
 ethArgs='env set bootargs ${bootargs} dm9000.mac_addr=${ethaddr}'
 
@@ -156,7 +156,7 @@ androidInitCmd="mw.l 0xb0010548 0x8000; \
 nand erase.chip; \
 ext4load mmc 0:1 0x80000000 u-boot-spl.bin; \
 writespl 0x80000000 8; \
-setenv mtdparts mtdparts=nand:8m(uboot-spl),2m(uboot),2m(uboot-env),8m(boot),-(system); \
+setenv mtdparts mtdparts=nand:8m(uboot-spl),2m(uboot),2m(uboot-env),16m(boot),-(system); \
 ext4load mmc 0:1 0x80000000 u-boot.img; \
 nand write 0x80000000 0x800000 0x80000; \
 ext4load mmc 0:1 0x80000000 u-boot-env.bin; \
