@@ -29,6 +29,40 @@ die()
   exit 1
 }
 
+sfdisk_ci20()
+{
+  sfdisk_tool=`which sfdisk`
+  blockdev_tool=`which blockdev`
+  partprobe_tool=`which partprobe`
+
+  [ -f "$sfdisk_tool" ] || die "No sfdisk in \$PATH"
+  [ -f "$blockdev_tool" ] || die "No blockdev in \$PATH"
+  [ -f "$partprobe_tool" ] || die "No partprobe in \$PATH"
+  [ -b "$1" ] || die "Device '$1' not found"
+
+  sfdisk_version=`$sfdisk_tool --version | sed 's,.*2\.\([0-9]*\)\.[0-9]*,\1,'`
+
+  unset sfdisk_is_ancient
+  test $sfdisk_version -lt 26 && sfdisk_is_ancient=1
+
+  sfdisk_dev="$1"
+  shift
+
+  sfdisk_parts=`echo $* | tr ' ' '\n'`
+
+  set +e
+  if [ $sfdisk_is_ancient ]; then
+      echo "$sfdisk_parts" | tr -d M | sudo $sfdisk_tool -L -uM "$sfdisk_dev"
+  else
+      echo "$sfdisk_parts" | sudo $sfdisk_tool "$sfdisk_dev"
+  fi
+  set -e
+
+  sudo $blockdev_tool --rereadpt $sfdisk_dev
+  sudo $partprobe_tool $sfdisk_dev
+  sleep 2
+}
+
 # check device
 device="$1"
 [ -e "${device}" ] || die "Device '${device}' not found"
@@ -60,7 +94,6 @@ fi
 
 # check for tools
 which bc >/dev/null || die "No bc in \$PATH"
-which sfdisk >/dev/null || die "No sfdisk in \$PATH"
 ${CROSS_COMPILE}gcc --version >/dev/null 2>&1 || \
   die "No ${CROSS_COMPILE}gcc, set \$CROSS_COMPILE"
 ${CROSS_COMPILE}objcopy --version >/dev/null 2>&1 || \
@@ -69,13 +102,7 @@ ${CROSS_COMPILE}objcopy --version >/dev/null 2>&1 || \
 # partition SD/MMC card
 # Limit partition size to 1GB (uboot seems to have problems with large (>[24]GB?) filesystems
 # FIXME: sfdisk often fails to reread the parition information
-set +e
-sudo sfdisk ${device} -uM -L << EOF
-2,1024,L
-EOF
-set -e
-sudo blockdev --rereadpt ${device}
-sudo partprobe ${device}
+sfdisk_ci20 ${device} 2M,1024M,L
 
 # create ext3 partition
 sudo mkfs.ext3 -L "CI20_Android" ${device}1

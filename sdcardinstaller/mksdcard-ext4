@@ -29,6 +29,40 @@ die()
   exit 1
 }
 
+sfdisk_ci20()
+{
+  sfdisk_tool=`which sfdisk`
+  blockdev_tool=`which blockdev`
+  partprobe_tool=`which partprobe`
+
+  [ -f "$sfdisk_tool" ] || die "No sfdisk in \$PATH"
+  [ -f "$blockdev_tool" ] || die "No blockdev in \$PATH"
+  [ -f "$partprobe_tool" ] || die "No partprobe in \$PATH"
+  [ -b "$1" ] || die "Device '$1' not found"
+
+  sfdisk_version=`$sfdisk_tool --version | sed 's,.*2\.\([0-9]*\)\.[0-9]*,\1,'`
+
+  unset sfdisk_is_ancient
+  test $sfdisk_version -lt 26 && sfdisk_is_ancient=1
+
+  sfdisk_dev="$1"
+  shift
+
+  sfdisk_parts=`echo $* | tr ' ' '\n'`
+
+  set +e
+  if [ $sfdisk_is_ancient ]; then
+      echo "$sfdisk_parts" | tr -d M | sudo $sfdisk_tool -L -uM "$sfdisk_dev"
+  else
+      echo "$sfdisk_parts" | sudo $sfdisk_tool "$sfdisk_dev"
+  fi
+  set -e
+
+  sudo $blockdev_tool --rereadpt $sfdisk_dev
+  sudo $partprobe_tool $sfdisk_dev
+  sleep 2
+}
+
 # check device
 device="$1"
 [ -e "${device}" ] || die "Device '${device}' not found"
@@ -55,23 +89,13 @@ fi
 
 # check for tools
 which bc >/dev/null || die "No bc in \$PATH"
-which sfdisk >/dev/null || die "No sfdisk in \$PATH"
 ${CROSS_COMPILE}gcc --version >/dev/null 2>&1 || \
   die "No ${CROSS_COMPILE}gcc, set \$CROSS_COMPILE"
 ${CROSS_COMPILE}objcopy --version >/dev/null 2>&1 || \
   die "No ${CROSS_COMPILE}objcopy, set \$CROSS_COMPILE"
 
-set +e
-sudo sfdisk ${device} << EOF
-2M,30M
-32M,750M
-782M,256M
-1038M,2048M
-EOF
-set -e
-sudo blockdev --rereadpt ${device}
-sudo partprobe ${device}
-sleep 2
+# FIXME: sfdisk often fails to reread the parition information
+sfdisk_ci20 ${device} 2M,30M 32M,750M 782M,256M 1038M,2048M
 
 partitions=("Boot" "System" "Cache" "Data")
 
