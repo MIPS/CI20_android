@@ -11,11 +11,10 @@
 # JZ graphics
 /dev/x2d                  0666   root     graphics
 /dev/ipu0                 0666   root     graphics
-/dev/ipu1                 0666   root     graphics
 /dev/dmmu                 0666   root     graphics
 
 # Ingenic camera device
-/dev/cim                  0666    root    root
+/dev/video0               0666    root    root
 
 # Ingenic vpu or tcsm
 /dev/tcsm		  0666    root    root
