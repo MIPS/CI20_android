@@ -123,6 +123,10 @@ CI20_AUDIO := true
 BOARD_HAS_HDMI := true
 BOARD_HDMI_INFO := xb4780 3d_tx_phy
 
+# Kernel v3.0.8 does not have clock boot time alarm support.
+# This flag is relevant for bluetooth functionalities.
+KERNEL_MISSING_CLOCK_BOOTTIME_ALARM := true
+
 ifeq ($(BOARD_HAS_HDMI),true)
 ifeq ($(findstring xb4780,$(BOARD_HDMI_INFO)), xb4780)
 TARGET_GLOBAL_CFLAGS += -DHAS_XB4780_HDMI
