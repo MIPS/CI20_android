@@ -258,10 +258,11 @@ public class EthernetManager {
             synchronized (this) {
                 mInterfaceName = info.getIfName();
                 Log.d(TAG, "reset device " + mInterfaceName);
-                NetworkUtils.resetConnections(mInterfaceName, NetworkUtils.RESET_ALL_ADDRESSES);
-            }
-            if (!NetworkUtils.stopDhcp(mInterfaceName)) {
-                Log.d(TAG, "Could not stop DHCP");
+                try {
+                    mNMService.removeInterfaceFromLocalNetwork(mInterfaceName);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "Failed to remove iface from local network " + e);
+                }
             }
             configureInterface(info);
         } else {
