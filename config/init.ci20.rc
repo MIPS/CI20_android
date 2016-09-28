@@ -57,6 +57,13 @@ on post-fs-data
 on boot
     write /dev/note "init.ci20.rc: on boot"
 
+    # There are no special/dedicated CPUs, let everything run everywhere.
+    write /dev/cpuset/foreground/cpus 0-1
+    write /dev/cpuset/foreground/boost/cpus 0-1
+    write /dev/cpuset/background/cpus 0-1
+    write /dev/cpuset/system-background/cpus 0-1
+    write /dev/cpuset/top-app/cpus 0-1
+
     setprop ro.tether.denied true
     #================= BCM
     #wpa_supplicant control socket for android wifi.c
