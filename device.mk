@@ -223,4 +223,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # for hardware/libhardware/hardware.c "ro.product.board","ro.board.platform",
 PRODUCT_POLICY := android.policy_mid
 
+# add chromium browser
+PRODUCT_PACKAGES +=     \
+    ChromePublic
+
 #$(call inherit-product-if-exists, hardware/broadcom/wlan/bcmdhd/firmware/bcm4324/device-bcm.mk)
