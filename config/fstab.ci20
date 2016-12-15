@@ -6,7 +6,7 @@
 #ubi0:boot              /boot                   raw     defaults      wait
 #ubi0:recovery          /recovery               raw     defaults      wait
 /dev/ubi0_1             /system                 ubifs   ro            wait
-/dev/ubi0_3             /data                   ubifs   defaults      wait,check
+/dev/ubi0_3             /data                   ubifs   defaults,nosuid,nodev      wait,check
 /dev/ubi0_2             /cache                  ubifs   defaults      wait,check
 /devices/ahb2/13450000.msc/mmc_host/mmc* auto   vfat    defaults      voldmanaged=sdcard1:auto
 /devices/ahb2/13500000.jz4780-otg/usb*   auto   vfat    defaults      voldmanaged=usbdisk1:auto
