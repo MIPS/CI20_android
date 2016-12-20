@@ -1,0 +1,12 @@
+#============= cameraserver.te ==============
+
+# sensor manager based camera/video stabilization
+allow cameraserver sensorservice_service:service_manager find;
+
+# gpu access
+allow cameraserver camera_device:chr_file rw_file_perms;
+allow cameraserver gpu_device:chr_file rw_file_perms;
+
+# /sys and /proc access
+allow cameraserver { proc proc_meminfo }:{ file lnk_file } r_file_perms;
+r_dir_file(cameraserver, sysfs)
