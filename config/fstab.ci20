@@ -9,5 +9,5 @@
 /dev/ubi0_3             /data                   ubifs   defaults      wait,check
 /dev/ubi0_2             /cache                  ubifs   defaults      wait,check
 /devices/ahb2/13450000.msc/mmc_host/mmc* auto   vfat    defaults      voldmanaged=sdcard1:auto
-/devices/platform/jz4780-dwc2/dwc2/usb1/1-1    auto    vfat    defaults      voldmanaged=usbdisk1:auto
-/devices/platform/jz-ehci.0/usb2/2-1           auto    vfat    defaults      voldmanaged=usbdisk2:auto
+/devices/ahb2/13500000.jz4780-otg/usb*   auto   vfat    defaults      voldmanaged=usbdisk1:auto
+/devices/ahb2/13490000.jz4780-ehci/usb*  auto   vfat    defaults      voldmanaged=usbdisk2:auto
