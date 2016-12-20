@@ -94,8 +94,8 @@ ${CROSS_COMPILE}gcc --version >/dev/null 2>&1 || \
 ${CROSS_COMPILE}objcopy --version >/dev/null 2>&1 || \
   die "No ${CROSS_COMPILE}objcopy, set \$CROSS_COMPILE"
 
-# FIXME: sfdisk often fails to reread the parition information
-sfdisk_ci20 ${device} 2M,30M 32M,750M 782M,256M 1038M,2048M
+# FIXME: sfdisk often fails to reread the partition information
+sfdisk_ci20 ${device} 2M,30M 32M,1000M 1032M,256M 1288M,2048M
 
 partitions=("Boot" "System" "Cache" "Data")
 
