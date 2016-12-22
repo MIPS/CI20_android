@@ -2,12 +2,12 @@
 # device/imgtec/ci20/config/fstab.ci20
 # The filesystem that contains the filesystem checker binary (typically /system) cannot
 # specify MF_CHECK, and must come before any filesystems that do specify MF_CHECK
-#<src>                  <mnt_point>             <type>  <mnt_flags>   <fs_mgr_flags>
-#ubi0:boot              /boot                   raw     defaults      wait
-#ubi0:recovery          /recovery               raw     defaults      wait
-/dev/ubi0_1             /system                 ubifs   ro            wait
-/dev/ubi0_3             /data                   ubifs   defaults,nosuid,nodev      wait,check
-/dev/ubi0_2             /cache                  ubifs   defaults      wait,check
-/devices/ahb2/13450000.msc/mmc_host/mmc* auto   vfat    defaults      voldmanaged=sdcard1:auto
-/devices/ahb2/13500000.jz4780-otg/usb*   auto   vfat    defaults      voldmanaged=usbdisk1:auto
-/devices/ahb2/13490000.jz4780-ehci/usb*  auto   vfat    defaults      voldmanaged=usbdisk2:auto
+#<src>                                      <mnt_point>  <type>   <mnt_flags>              <fs_mgr_flags>
+#ubi0:boot                                  /boot        raw      defaults                 wait
+#ubi0:recovery                              /recovery    raw      defaults                 wait
+/dev/ubi0_1                                 /system      ubifs    ro                       wait
+/dev/ubi0_3                                 /data        ubifs    defaults,nosuid,nodev    wait,check
+/dev/ubi0_2                                 /cache       ubifs    defaults                 wait,check
+/devices/ahb2/13450000.msc/mmc_host/mmc*    auto         vfat     defaults                 voldmanaged=sdcard1:auto
+/devices/ahb2/13500000.jz4780-otg/usb*      auto         vfat     defaults                 voldmanaged=usbdisk1:auto
+/devices/ahb2/13490000.jz4780-ehci/usb*     auto         vfat     defaults                 voldmanaged=usbdisk2:auto
