@@ -74,8 +74,15 @@ bootImg=${BOOTIMG:-${OUT}/boot.img}
 [ -e "${bootImg}" ] || die "Android boot image '${bootImg}' not found"
 recoveryImg=${RECOVERYIMG:-${OUT}/recovery.img}
 [ -e "${recoveryImg}" ] || die "Android recovery image '${recoveryImg}' not found"
-systemImg=${SYSTEMIMG:-${OUT}/system.img}
-[ -e "${systemImg}" ] || die "Android system image '${systemImg}' not found"
+systemImgEXT4=${SYSTEMIMG:-${OUT}/system.img}
+[ -e "${systemImgEXT4}" ] || die "Android system image '${systemImgEXT4}' not found"
+
+systemImg=${OUT}/system.ubifs.img
+if [[ ! -f $systemImg || "$systemImg" -ot "$systemImgEXT4" ]]; then
+  echo "Converting the image to UBIFS"
+  sh $ANDROID_BUILD_TOP/device/imgtec/ci20/sdcardinstaller/convert_extfs_to_ubifs $systemImgEXT4 $systemImg
+  echo "CI20 specific target system fs done"
+fi
 
 # Check that systemImg is a ubifs
 # FIXME: unfortunately file(1) is not very helpful...
