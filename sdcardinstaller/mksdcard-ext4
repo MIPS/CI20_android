@@ -112,8 +112,14 @@ do
     partSystem=${part}
   fi
 
-  # create ext4 data partition
-  sudo mkfs.ext4 -L "${partitions[$i-1]}" ${device}${part}
+  if [ $i -le 2 ]; then
+    # Partitions 1 and 2 will be set up as ext4
+    sudo mkfs.ext4 -L "${partitions[$i-1]}" ${device}${part}
+  else
+    # Partitions 3 and 4 will be set up as f2fs
+    # mkfs.f2fs command requires f2fs-tools package
+    sudo mkfs.f2fs -l "${partitions[$i-1]}" ${device}${part}
+  fi
 done
 
 # mount ext4 partition
