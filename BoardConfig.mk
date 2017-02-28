@@ -123,13 +123,6 @@ CI20_AUDIO := true
 BOARD_HAS_HDMI := true
 BOARD_HDMI_INFO := xb4780 3d_tx_phy
 
-ifeq ($(BOARD_HAS_HDMI),true)
-ifeq ($(findstring xb4780,$(BOARD_HDMI_INFO)), xb4780)
-TARGET_GLOBAL_CFLAGS += -DHAS_XB4780_HDMI
-TARGET_GLOBAL_CPPFLAGS += -DHAS_XB4780_HDMI
-endif
-endif
-
 BOARD_SEPOLICY_DIRS += \
 	device/imgtec/ci20/sepolicy
 
