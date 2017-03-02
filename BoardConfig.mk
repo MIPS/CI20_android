@@ -43,7 +43,7 @@ ARCH_MIPS_PAGE_SHIFT := 12
 TARGET_NO_BOOTLOADER := true
 
 BOARD_KERNEL_BASE := 0x81F00000
-BOARD_KERNEL_CMDLINE := mem=256M@0x0 mem=752M@0x30000000 console=ttyS0,115200 ip=off rw rdinit=/init androidboot.hardware=ci20
+BOARD_KERNEL_CMDLINE := mem=256M@0x0 mem=768M@0x30000000 console=ttyS0,115200 ip=off rw rdinit=/init androidboot.hardware=ci20
 ifneq ($(WITH_EXT4),true)
 BOARD_KERNEL_CMDLINE += ubi.mtd=1
 endif
