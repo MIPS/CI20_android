@@ -13,3 +13,20 @@ LOCAL_CFLAGS += -DWITH_A2DP
 
 include $(BUILD_SHARED_LIBRARY)
 
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := \
+    AudioPolicyManagerBase.cpp \
+    AudioPolicyCompatClient.cpp \
+    audio_policy_hal.cpp
+
+ifeq ($(AUDIO_POLICY_TEST),true)
+  LOCAL_CFLAGS += -DAUDIO_POLICY_TEST
+endif
+
+LOCAL_SHARED_LIBRARIES := libmedia
+LOCAL_STATIC_LIBRARIES := libmedia_helper
+LOCAL_MODULE := libaudiopolicy_legacy
+LOCAL_CFLAGS += -Wno-unused-parameter
+
+include $(BUILD_STATIC_LIBRARY)
