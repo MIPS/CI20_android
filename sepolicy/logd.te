@@ -1,0 +1,2 @@
+#============= logd ==============
+allow logd unlabeled:dir search;
