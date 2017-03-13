@@ -1,3 +1,4 @@
 #============= bluetooth.te ==============
-allow bluetooth serial_device:chr_file { read write ioctl open };
-allow bluetooth sysfs:file write;
+allow bluetooth serial_device:chr_file rw_file_perms;
+allow bluetooth sysfs:file w_file_perms;
+allow bluetooth storage_stub_file:dir r_dir_perms;
