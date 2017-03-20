@@ -138,9 +138,9 @@ envBin=${tmpDir}/u-boot-env.bin
 envSize=$((32 * 1024))
 
 # generate NAND u-boot environment
-androidBootArgs="debug mtdparts=jz4780-nand:28m(system-offset),-(system)"
+androidBootArgs="debug"
 # Command to boot Android from NAND
-androidBootCmd="setenv mtdparts mtdparts=nand:8m(uboot-spl),2m(uboot),2m(uboot-env),16m(boot),-(system); nand read 0x88000000 boot ${bootImgSizeHex}; boota 0x88000000"
+androidBootCmd="mtdparts default; ubi part boot; ubi read 0x88000000 boot ${bootImgSizeHex}; boota 0x88000000"
 # Command to set device specific MAC address
 ethArgs='env set bootargs ${bootargs} dm9000.mac_addr=${ethaddr}'
 
@@ -164,20 +164,22 @@ androidInitCmd="mw.l 0xb0010548 0x8000; \
 nand erase.chip; \
 ext4load mmc 0:1 0x80000000 u-boot-spl.bin; \
 writespl 0x80000000 8; \
-setenv mtdparts mtdparts=nand:8m(uboot-spl),2m(uboot),2m(uboot-env),16m(boot),-(system); \
+mtdparts default; \
 ext4load mmc 0:1 0x80000000 u-boot.img; \
 nand write 0x80000000 0x800000 0x80000; \
 ext4load mmc 0:1 0x80000000 u-boot-env.bin; \
 nand write 0x80000000 0x00a00000 ${envSize}; \
+ubi part boot; \
+ubi create boot 0x1600000; \
+ubi create recovery 0x1600000; \
 ext4load mmc 0:1 0x80000000 boot.img; \
-nand write 0x80000000 boot ${bootImgSizeHex}; \
-ubi part system; \
-ubi create recovery 0x800000; \
-ubi create system 0x28000000; \
-ubi create cache 0x10000000; \
-ubi create data 0x100000000; \
+ubi write 0x80000000 boot ${bootImgSizeHex}; \
 ext4load mmc 0:1 0x80000000 recovery.img; \
 ubi write 0x80000000 recovery ${recoveryImgSizeHex}; \
+ubi part system; \
+ubi create system 0x28000000; \
+ubi create cache 0x10000000; \
+ubi create userdata 0x100000000; \
 run flash_system0"
 # Command to boot Android from MMC
 androidBootCmd="ext4load mmc 0:1 0x88000000 boot.img; boota 0x88000000"
