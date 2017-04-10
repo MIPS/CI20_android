@@ -98,7 +98,7 @@ PRODUCT_PACKAGES += 	\
 PRODUCT_PACKAGES +=      \
     hwcomposer.xb4780    \
     audio.primary.xb4780 \
-    audio_policy.xb4780  \
+    audio_policy.default  \
     lights.xb4780        \
     libdmmu              \
     libjzipu             \
@@ -220,9 +220,6 @@ PRODUCT_PROPERTY_OVERRIDES +=                                          \
 PRODUCT_PROPERTY_OVERRIDES += \
         net.dns1=8.8.8.8 \
         net.dns2=8.8.4.4
-
-# for hardware/libhardware/hardware.c "ro.product.board","ro.board.platform",
-PRODUCT_POLICY := android.policy_mid
 
 # add chromium browser
 PRODUCT_PACKAGES +=     \
