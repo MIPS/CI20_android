@@ -1,6 +1,7 @@
 #============= init.te ==============
 allow init self:capability sys_module;
 allow init tmpfs:lnk_file create;
+allow init mtd_device:chr_file r_file_perms;
 
 # ConfigFS support sepolicy permissions
 allow init configfs:dir create_dir_perms;
