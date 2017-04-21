@@ -12,6 +12,7 @@
 
 set -e
 tmpDir=`mktemp -d`
+ubootPrebuiltDir="$ANDROID_BUILD_TOP/device/imgtec/ci20/u-boot"
 
 cleanup()
 {
@@ -63,6 +64,10 @@ sfdisk_ci20()
   sleep 2
 }
 
+#check for U-Boot prebuilt dir
+[ ! -z "${ANDROID_BUILD_TOP}" ] || die "ANDROID_BUILD_TOP has not been initialized"
+[ -e "${ubootPrebuiltDir}" ] || die "U-Boot prebuilt directory '${ubootPrebuiltDir}' does not exist"
+
 # check device
 device="$1"
 [ -e "${device}" ] || die "Device '${device}' not found"
@@ -89,23 +94,6 @@ fi
 file -b "${systemImg}" | grep -q '^data$' || \
     die "File '${systemImg}' is not a UBI filesystem image"
 
-# default environment
-[ ! -z "${CROSS_COMPILE}" ] || export CROSS_COMPILE=mips-linux-gnu-
-[ ! -z "${UBOOT_REPO}" ] || UBOOT_REPO="https://github.com/MIPS/CI20_u-boot"
-[ ! -z "${UBOOT_BRANCH}" ] || UBOOT_BRANCH="ci20-v2013.10"
-
-if [ -z "${JOBS}" ]; then
-  cpuCount=`grep -Ec '^processor' /proc/cpuinfo`
-  JOBS=`echo "${cpuCount} * 2" | bc`
-fi
-
-# check for tools
-which bc >/dev/null || die "No bc in \$PATH"
-${CROSS_COMPILE}gcc --version >/dev/null 2>&1 || \
-  die "No ${CROSS_COMPILE}gcc, set \$CROSS_COMPILE"
-${CROSS_COMPILE}objcopy --version >/dev/null 2>&1 || \
-  die "No ${CROSS_COMPILE}objcopy, set \$CROSS_COMPILE"
-
 # partition SD/MMC card
 # Limit partition size to 1GB (uboot seems to have problems with large (>[24]GB?) filesystems
 # FIXME: sfdisk often fails to reread the parition information
@@ -120,27 +108,13 @@ mkdir ${sdMount}
 sudo mount ${device}1 ${sdMount}
 sudo chmod a+w ${sdMount}
 
-# clone u-boot
-ubootDir=$tmpDir/u-boot
-git clone ${UBOOT_REPO} -b ${UBOOT_BRANCH} --depth 1 $ubootDir
+# install MMC u-boot
+sudo dd if=${ubootPrebuiltDir}/mmc/u-boot-spl.bin of=${device} obs=512 seek=1
+sudo dd if=${ubootPrebuiltDir}/mmc/u-boot.img of=${device} obs=1K seek=14
 
-# build & install MMC u-boot
-pushd $ubootDir
-  make distclean
-  make ci20_mmc_config
-  make -j${JOBS}
-  sudo dd if=spl/u-boot-spl.bin of=${device} obs=512 seek=1
-  sudo dd if=u-boot.img of=${device} obs=1K seek=14
-popd
-
-# build & copy NAND u-boot
-pushd $ubootDir
-  make distclean
-  make ci20_config
-  make -j${JOBS}
-  sudo cp -v spl/u-boot-spl.bin ${sdMount}/
-  sudo cp -v u-boot.img ${sdMount}/
-popd
+# copy NAND u-boot
+sudo cp -v ${ubootPrebuiltDir}/nand/u-boot-spl.bin ${sdMount}/
+sudo cp -v ${ubootPrebuiltDir}/nand/u-boot.img ${sdMount}/
 
 # copy Android boot image
 sudo cp -v ${bootImg} ${sdMount}/
@@ -182,7 +156,7 @@ echo "stdout=eserial0,eserial4" >>${envText}
 echo
 echo "NAND U-boot environment:"
 cat ${envText}
-${ubootDir}/tools/mkenvimage -s ${envSize} -o ${envBin} ${envText}
+${ubootPrebuiltDir}/mkenvimage -s ${envSize} -o ${envBin} ${envText}
 sudo cp ${envBin} ${sdMount}/u-boot-env.bin
 
 # generate (SD/MMC) u-boot environment
@@ -253,7 +227,7 @@ echo "flash_system${idx}=mw.l 0xb0010544 0x8000; echo All done :)" >>${envText}
 echo
 echo "MMC U-boot environment:"
 cat ${envText}
-${ubootDir}/tools/mkenvimage -s ${envSize} -o ${envBin} ${envText}
+${ubootPrebuiltDir}/mkenvimage -s ${envSize} -o ${envBin} ${envText}
 sudo dd if=${envBin} of=${device} obs=1 seek=$((526 * 1024))
 
 echo
