@@ -7,11 +7,12 @@
 # Derived from the Debian setup script by Paul Burton
 #
 # Usage:
-#   ./mksdcard /dev/sdX
+#   ./mksdcard-ext4 /dev/sdX
 #
 
 set -e
 tmpDir=`mktemp -d`
+ubootPrebuiltDir="$ANDROID_BUILD_TOP/device/imgtec/ci20/u-boot"
 
 cleanup()
 {
@@ -63,6 +64,10 @@ sfdisk_ci20()
   sleep 2
 }
 
+#check for U-Boot prebuilt dir
+[ ! -z "${ANDROID_BUILD_TOP}" ] || die "ANDROID_BUILD_TOP has not been initialized"
+[ -e "${ubootPrebuiltDir}" ] || die "U-Boot prebuilt directory '${ubootPrebuiltDir}' does not exist"
+
 # check device
 device="$1"
 [ -e "${device}" ] || die "Device '${device}' not found"
@@ -76,23 +81,6 @@ recoveryImg=${RECOVERYIMG:-${OUT}/recovery.img}
 [ -e "${recoveryImg}" ] || die "Android recovery image '${recoveryImg}' not found"
 systemImg=${SYSTEMIMG:-${OUT}/system.img}
 [ -e "${systemImg}" ] || die "Android system image '${systemImg}' not found"
-
-# default environment
-[ ! -z "${CROSS_COMPILE}" ] || export CROSS_COMPILE=mips-linux-gnu-
-[ ! -z "${UBOOT_REPO}" ] || UBOOT_REPO="https://github.com/MIPS/CI20_u-boot"
-[ ! -z "${UBOOT_BRANCH}" ] || UBOOT_BRANCH="ci20-v2013.10"
-
-if [ -z "${JOBS}" ]; then
-  cpuCount=`grep -Ec '^processor' /proc/cpuinfo`
-  JOBS=`echo "${cpuCount} * 2" | bc`
-fi
-
-# check for tools
-which bc >/dev/null || die "No bc in \$PATH"
-${CROSS_COMPILE}gcc --version >/dev/null 2>&1 || \
-  die "No ${CROSS_COMPILE}gcc, set \$CROSS_COMPILE"
-${CROSS_COMPILE}objcopy --version >/dev/null 2>&1 || \
-  die "No ${CROSS_COMPILE}objcopy, set \$CROSS_COMPILE"
 
 # FIXME: sfdisk often fails to reread the partition information
 sfdisk_ci20 ${device} 2M,30M 32M,1000M 1032M,256M 1288M,2048M
@@ -128,18 +116,9 @@ mkdir ${sdMount}
 sudo mount ${device}${part} ${sdMount}
 sudo chmod a+w ${sdMount}
 
-# clone u-boot
-ubootDir=$tmpDir/u-boot
-git clone ${UBOOT_REPO} -b ${UBOOT_BRANCH} --depth 1 $ubootDir
-
-# build & install MMC u-boot
-pushd $ubootDir
-  make distclean
-  make ci20_mmc_config
-  make -j${JOBS}
-  sudo dd if=spl/u-boot-spl.bin of=${device} obs=512 seek=1
-  sudo dd if=u-boot.img of=${device} obs=1K seek=14
-popd
+# install MMC u-boot
+sudo dd if=${ubootPrebuiltDir}/mmc/u-boot-spl.bin of=${device} obs=512 seek=1
+sudo dd if=${ubootPrebuiltDir}/mmc/u-boot.img of=${device} obs=1K seek=14
 
 # copy Android boot image
 sudo cp -v ${bootImg} ${sdMount}/
@@ -183,7 +162,7 @@ sudo dd if=${systemImg} of=${device}${partSystem}
 echo
 echo "MMC U-boot environment:"
 cat ${envText}
-${ubootDir}/tools/mkenvimage -s ${envSize} -o ${envBin} ${envText}
+${ubootPrebuiltDir}/mkenvimage -s ${envSize} -o ${envBin} ${envText}
 sudo dd if=${envBin} of=${device} obs=1 seek=$((526 * 1024))
 
 echo
