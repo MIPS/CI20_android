@@ -30,6 +30,7 @@ on init
     chmod 0660 /sys/class/rfkill/rfkill0/state
     chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
     chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
+    setprop ro.radio.noril yes
 
     # Support legacy paths
     symlink /sdcard /mnt/sdcard
