@@ -77,7 +77,7 @@ service setup_fs /system/bin/setup_fs data cache
     group root
     oneshot
 
-service wpa_supplicant /system/bin/wpa_supplicant \
+service wpa_supplicant /vendor/bin/hw/wpa_supplicant \
                        -g@android:wpa_wlan0 \
                        -iwlan0 -Dnl80211 \
                        -O/data/misc/wifi/sockets \
