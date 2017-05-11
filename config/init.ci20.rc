@@ -11,9 +11,6 @@ on early-init
     # chmod 0660 /sys/class/rfkill/rfkill0/state
     # write /sys/class/rfkill/rfkill0/state 0
 
-    # atrace support is expecting debugfs to be present
-    mount debugfs debugfs /sys/kernel/debug
-
 on init
     write /dev/note "init.ci20.rc: on init"
     #
