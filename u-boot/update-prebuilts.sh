@@ -50,7 +50,7 @@ done
 # default environment
 [ ! -z "${CROSS_COMPILE}" ] || export CROSS_COMPILE=mips-linux-gnu-
 [ ! -z "${UBOOT_REPO}" ] || UBOOT_REPO="https://github.com/MIPS/CI20_u-boot"
-[ ! -z "${UBOOT_BRANCH}" ] || UBOOT_BRANCH="ci20-v2013.10"
+[ ! -z "${UBOOT_BRANCH}" ] || UBOOT_BRANCH="android-ci20-v2013.10"
 
 # check for tools
 which bc >/dev/null || die "No bc in \$PATH"
