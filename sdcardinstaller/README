@@ -4,12 +4,60 @@ an update version of u-boot that supports boota and the Android boot and system 
 
 To use:
 
-Build Android in the normal way:
+1. Building android
 
+    1.1. Build UBIFS image the normal way:
         $ cd $TOP
         $ m -j24
 
-Run the script substituting the appropriate device name for /dev/sdX:
+    1.2. Build EXT4/F2FS image the following way:
+        export WITH_EXT4=true
+        $ cd $TOP
+        $ m -j24
 
+
+2. Run the script substituting the appropriate device name for /dev/sdX:
+
+    2.1. In case of UBIFS image use the following commands:
         $ cd $TOP/device/imgtec/ci20/sdcardinstaller
         $ ./mksdcard /dev/sdX
+
+    2.2. In case of EXT4/F2FS image use the following commands:
+        $ cd $TOP/device/imgtec/ci20/sdcardinstaller
+        $ ./mksdcard-ext4 /dev/sdX
+
+3. Fastboot usage:
+
+	Fastboot functionality does not behave similarly on UBIFS and EXT4 set-ups.
+	Important differences are related to cache.img, system.img and userdata.img flashing.
+
+	UBIFS cache.img and userdata.img may be cleared simply by running command "fastboot erase <partition>",
+	while this is not functional for EXT4. Under EXT4 system set-up generated cache.img and userdata.img
+	have to be flashed instead of being erased, with the command "fastboot flash <partition>". Even though
+	the approach is different, the final result is the same.
+
+	And the difference regarding the system.img comes from the fact that UBIFS system image is not
+	in the UBIFS format right after the build. It is being converted when running scripts
+	sdcardinstaller/mksdcard and sdcardinstaller/fastboot-flash-all.sh. Although it can be converted directly
+	by using script sdcardinstaller/convert_extfs_to_ubifs.
+	The result of this is inability of using command "fastboot flashall", since it internally uses
+	command "fastboot flash system", which would refer to system.img which is in EXT4 format.
+	Instead of this command "fastboot $device_id_option flash system ${OUT}/system.ubifs.img" has to be used.
+
+	To bring the device to fastboot mode, run the following command once the Android enables adb connection:
+		$ adb reboot-bootloader
+
+	3.1. For flashing images on UBIFS system set-up, use the following commands:
+
+		$ fastboot flash cache
+		$ fastboot flash userdata
+		$ fastboot flashall
+
+	3.2. For flashing images on EXT4/F2FS system set-up, use the following commands:
+
+		$ fastboot erase cache
+		$ fastboot erase userdata
+		$ fastboot flash boot
+		$ fastboot flash recovery
+		$ fastboot flash system ${OUT}/system.ubifs.img
+		$ fastboot reboot

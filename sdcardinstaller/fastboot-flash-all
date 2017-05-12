@@ -1,0 +1,200 @@
+#!/bin/bash
+#
+# Copyright (c) 2017 Imagination Technologies
+# Author: Dragan Cecavac <dragan.cecavac@imgtec.com>
+#
+# Flashes/erases partitions.
+# Reboots the board once everything is set up.
+#
+# Usage:
+#   ./fastboot-flash-all [device_id]
+#
+
+die()
+{
+  echo "Error: $@" >&2
+  exit 1
+}
+
+check_environment()
+{
+	# Check for adb
+	[ -z `which adb 2>&1` ] && die "No 'adb' present"
+
+	# Check for diff
+	[ -z `which diff 2>&1` ] && die "No 'diff' present"
+
+	# Check for fastboot
+	[ -z `which fastboot 2>&1` ] && die "No 'fastboot' present"
+
+	# Check for grep
+	[ -z `which grep 2>&1` ] && die "No 'grep' present"
+
+	# Check for tee
+	[ -z `which tee 2>&1` ] && die "No 'tee' present"
+
+	# Check for wc
+	[ -z `which wc 2>&1` ] && die "No 'wc' present"
+
+	# Check if $ANDROID_BUILD_TOP is defined
+	[ -z $ANDROID_BUILD_TOP ] && die '$ANDROID_BUILD_TOP is not defined'
+
+	# Check if $OUT is defined
+	[ -z $OUT ] && die '$OUT is not defined'
+
+	# Check if fstab.ci20 file is present in output directory
+	# It is used to determine if the target filesystem matches the specified filesystem during the build
+	out_fstab="$OUT/root/fstab.ci20"
+	[ ! -f "$out_fstab" ] && die "'$out_fstab' not found"
+
+	# Check if convert_extfs_to_ubifs script is present
+	if [ ! -f "$ANDROID_BUILD_TOP/device/imgtec/ci20/sdcardinstaller/convert_extfs_to_ubifs" ]; then
+		die "$ANDROID_BUILD_TOP/device/imgtec/ci20/sdcardinstaller/convert_extfs_to_ubifs not found"
+	fi
+
+	# Check if boot.img exists
+	[ ! -f "$OUT/boot.img" ] && die "Android boot image '$OUT/boot.img' not found"
+
+	# Check if recovery.img exists
+	[ ! -f "$OUT/recovery.img" ] && die "Android boot image '$OUT/recovery.img' not found"
+
+	systemImgExt4="$OUT/system.img"
+	# Check if EXT4 system.img exists
+	[ ! -f "$systemImgExt4" ] && die "Android system image '$systemImgExt4' not found"
+}
+
+check_ext4_f2fs_environment()
+{
+	# Check if EXT4/F2FS specific fstab file is present
+	ext4_f2fs_fstab="$ANDROID_BUILD_TOP/device/imgtec/ci20/config/fstab-ext4.ci20"
+	[ ! -f "$ext4_f2fs_fstab" ] && die "'$ext4_f2fs_fstab' not found"
+
+	# Report error if android has not been built for the same filesystem as on the target
+	local fstab_diff=`diff -a $out_fstab $ext4_f2fs_fstab`
+	[ -n "$fstab_diff" ] && die "Build and target do not have the same filesystem set-up"
+
+	# Check if cache.img exists
+	[ ! -f "$OUT/cache.img" ] && die "Android boot image '$OUT/cache.img' not found"
+
+	# Check if userdata.img exists
+	[ ! -f "$OUT/userdata.img" ] && die "Android boot image '$OUT/userdata.img' not found"
+}
+
+check_ubifs_environment()
+{
+	# Check if UBIFS specific fstab file is present
+	ubifs_fstab="$ANDROID_BUILD_TOP/device/imgtec/ci20/config/fstab.ci20"
+	[ ! -f "$ubifs_fstab" ] && die "'$ubifs_fstab' not found"
+
+	# Report error if android has not been built for the same filesystem as on the target
+	local fstab_diff=`diff -a $out_fstab $ubifs_fstab`
+	[ -n "$fstab_diff" ] && die "Build and target do not have the same filesystem set-up"
+
+	systemImgUbifs=${OUT}/system.ubifs.img
+	if [[ ! -f $systemImgUbifs || "$systemImgUbifs" -ot "$systemImgExt4" ]]; then
+	  echo "Converting EXT4 system image to UBIFS"
+	  sh $ANDROID_BUILD_TOP/device/imgtec/ci20/sdcardinstaller/convert_extfs_to_ubifs $systemImgExt4 $systemImgUbifs
+	fi
+}
+
+perform_calculations()
+{
+	# Get connected adb device list and their number
+	adb_devices=`adb devices`
+	adb_device_num=$((`echo -e "${adb_devices}" | grep ci20 | wc -l`))
+
+	# Get connected fastboot device list and their number
+	fastboot_devices=`fastboot devices`
+	fastboot_device_num=$((`echo "${fastboot_devices}" | grep ci20 | wc -l`))
+
+	# Sum of all connected devices
+	connected_devices=$(($adb_device_num + $fastboot_device_num))
+}
+
+ensure_fastboot_mode()
+{
+	# Report error if no devices are connected
+	[ $connected_devices -lt 1 ] && die "No devices connected."
+
+	# Report error if it is not clear which device to use
+	[ -z "$device_id_option" ] && [ $connected_devices -gt 1 ] && die "No device is specified and there are $connected_devices devices connected."
+
+	if [ -z "$device_id_option" ]; then
+		# If unspecified device is in adb mode, reboot it to fastboot
+		# If it isn't in adb mode, it means it's already in fastboot mode
+		if [ "$adb_device_num" -eq 1 ]; then
+			adb reboot-bootloader
+			echo "Rebooting to fastboot, please wait."
+		fi
+	else
+		# Check if the specified device is already in fastboot mode
+		if [ "$fastboot_device_num" -gt 0 ]; then
+			fastboot_device_array=($fastboot_devices)
+			for i in "${fastboot_device_array[@]}"; do
+				[ "$i" == "$1" ] && return
+			done
+		fi
+
+		# If the specified device is in adb mode, reboot it to fastboot mode
+		if [ "$adb_device_num" -gt 0 ]; then
+			adb_device_array=($adb_devices)
+			for i in "${adb_device_array[@]}"; do
+				if [ "$i" == "$1" ]; then
+					adb $device_id_option reboot-bootloader
+					echo "Rebooting to fastboot, please wait."
+					return
+				fi
+			done
+		fi
+
+		die "The specified device '$1' is not connected."
+	fi
+}
+
+flash_all_ext4_f2fs()
+{
+	fastboot $device_id_option flash cache
+	fastboot $device_id_option flash userdata
+	fastboot $device_id_option flashall
+}
+
+flash_all_ubifs()
+{
+	fastboot $device_id_option erase cache
+	fastboot $device_id_option erase userdata
+	fastboot $device_id_option flash boot
+	fastboot $device_id_option flash recovery
+	fastboot $device_id_option flash system $systemImgUbifs
+	fastboot $device_id_option reboot
+}
+
+flash_all()
+{
+	fsType=`fastboot $device_id_option getvar partition-type:system 2>&1`
+
+	case $fsType in
+		*ext4*)
+			check_ext4_f2fs_environment
+			flash_all_ext4_f2fs
+			return
+			;;
+		*ubifs*)
+			check_ubifs_environment
+			flash_all_ubifs
+			return
+			;;
+		*)
+			die "Unrecognized file system type"
+		;;
+	esac
+}
+
+# Setup device_id_option
+[ -n "$1" ] && device_id_option="-s $1"
+
+check_environment
+perform_calculations
+ensure_fastboot_mode $1
+flash_all
+
+echo "Successful completion."
