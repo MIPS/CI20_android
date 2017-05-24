@@ -83,7 +83,11 @@ systemImg=${SYSTEMIMG:-${OUT}/system.img}
 [ -e "${systemImg}" ] || die "Android system image '${systemImg}' not found"
 
 # FIXME: sfdisk often fails to reread the partition information
-sfdisk_ci20 ${device} 2M,30M 32M,1000M 1032M,256M 1288M,2048M
+if [ "$WITH_GMS" == "true" ]; then
+  sfdisk_ci20 ${device} 2M,30M 32M,1750M 1782M,256M 2038M,2048M
+else
+  sfdisk_ci20 ${device} 2M,30M 32M,1000M 1032M,256M 1288M,2048M
+fi
 
 partitions=("Boot" "System" "Cache" "Data")
 

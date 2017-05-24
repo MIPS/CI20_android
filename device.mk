@@ -184,7 +184,24 @@ $(call inherit-product, hardware/ingenic/xb4780/libxbomx/xbomx.mk)
 # inherit from the non-open-source side, if present
 #
 $(call inherit-product-if-exists, vendor/imgtec/$(TARGET_BOARD_NAME)/$(TARGET_BOARD_NAME)-vendor.mk)
-$(call inherit-product-if-exists, vendor/google/products/gms.mk)
+
+# configure gms
+ifeq ($(WITH_GMS),true)
+ $(call inherit-product-if-exists, vendor/google/products/gms.mk)
+PRODUCT_COPY_FILES += \
+	vendor/google/apps/GmsCore/lib/armeabi-v7a/libAppDataSearch.so:/system/priv-app/GmsCore/lib/arm/libAppDataSearch.so \
+	vendor/google/apps/GmsCore/lib/armeabi-v7a/libconscrypt_gmscore_jni.so:/system/priv-app/GmsCore/lib/arm/libconscrypt_gmscore_jni.so \
+	vendor/google/apps/GmsCore/lib/armeabi-v7a/libgcastv2_base.so:/system/priv-app/GmsCore/lib/arm/libgcastv2_base.so \
+	vendor/google/apps/GmsCore/lib/armeabi-v7a/libgcastv2_support.so:/system/priv-app/GmsCore/lib/arm/libgcastv2_support.so \
+	vendor/google/apps/GmsCore/lib/armeabi-v7a/libgmscore.so:/system/priv-app/GmsCore/lib/arm/libgmscore.so \
+	vendor/google/apps/GmsCore/lib/armeabi-v7a/libgoogle-ocrclient-v3.so:/system/priv-app/GmsCore/lib/arm/libgoogle-ocrclient-v3.so \
+	vendor/google/apps/GmsCore/lib/armeabi-v7a/libjgcastservice.so:/system/priv-app/GmsCore/lib/arm/libjgcastservice.so \
+	vendor/google/apps/GmsCore/lib/armeabi-v7a/libleveldbjni.so:/system/priv-app/GmsCore/lib/arm/libleveldbjni.so \
+	vendor/google/apps/GmsCore/lib/armeabi-v7a/libNearbyApp.so:/system/priv-app/GmsCore/lib/arm/libNearbyApp.so \
+	vendor/google/apps/GmsCore/lib/armeabi-v7a/libsslwrapper_jni.so:/system/priv-app/GmsCore/lib/arm/libsslwrapper_jni.so \
+	vendor/google/apps/GmsCore/lib/armeabi-v7a/libwearable-selector.so:/system/priv-app/GmsCore/lib/arm/libwearable-selector.so \
+	vendor/google/apps/GmsCore/lib/armeabi-v7a/libWhisper.so:/system/priv-app/GmsCore/lib/arm/libWhisper.so
+endif
 
 # Get the TTS language packs
 $(call inherit-product-if-exists, external/svox/pico/lang/all_pico_languages.mk)

@@ -159,6 +159,12 @@ cat ${envText}
 ${ubootPrebuiltDir}/mkenvimage -s ${envSize} -o ${envBin} ${envText}
 sudo cp ${envBin} ${sdMount}/u-boot-env.bin
 
+if [ "$WITH_GMS" == "true" ]; then
+  systemVolSize=0x40000000
+else
+  systemVolSize=0x28000000
+fi
+
 # generate (SD/MMC) u-boot environment
 androidInitCmd="mw.l 0xb0010548 0x8000; \
 nand erase.chip; \
@@ -177,7 +183,7 @@ ubi write 0x80000000 boot ${bootImgSizeHex}; \
 ext4load mmc 0:1 0x80000000 recovery.img; \
 ubi write 0x80000000 recovery ${recoveryImgSizeHex}; \
 ubi part system; \
-ubi create system 0x28000000; \
+ubi create system ${systemVolSize}; \
 ubi create cache 0x10000000; \
 ubi create userdata 0x100000000; \
 run flash_system0"
