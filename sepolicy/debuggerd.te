@@ -1,2 +1,0 @@
-#============= debuggerd.te ==============
-allow debuggerd gpu_device:chr_file { read open getattr };
