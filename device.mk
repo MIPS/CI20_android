@@ -131,6 +131,10 @@ PRODUCT_PACKAGES += \
     android.hardware.sensors@1.0-impl \
     android.hardware.light@2.0-impl
 
+ # Memtrack HAL
+PRODUCT_PACKAGES += \
+    android.hardware.memtrack@1.0-impl
+
 # Power HAL
 PRODUCT_PACKAGES += \
     android.hardware.power@1.0-impl \
