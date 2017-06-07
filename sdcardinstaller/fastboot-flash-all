@@ -30,9 +30,6 @@ check_environment()
 	# Check for grep
 	[ -z `which grep 2>&1` ] && die "No 'grep' present"
 
-	# Check for tee
-	[ -z `which tee 2>&1` ] && die "No 'tee' present"
-
 	# Check for wc
 	[ -z `which wc 2>&1` ] && die "No 'wc' present"
 
