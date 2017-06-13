@@ -8,6 +8,7 @@
 /dev/ubi0_0                                 /system      ubifs    ro                       wait
 /dev/ubi0_2                                 /data        ubifs    defaults,nosuid,nodev    wait,check
 /dev/ubi0_1                                 /cache       ubifs    defaults                 wait,check
+/dev/block/zram0                            none         swap     defaults                 zramsize=268435456,notrim
 /devices/ahb2/13450000.msc/mmc_host/mmc*    auto         vfat     defaults                 voldmanaged=sdcard1:auto
 /devices/ahb2/13500000.jz4780-otg/usb*      auto         vfat     defaults                 voldmanaged=usbdisk1:auto
 /devices/ahb2/13490000.jz4780-ehci/usb*     auto         vfat     defaults                 voldmanaged=usbdisk2:auto

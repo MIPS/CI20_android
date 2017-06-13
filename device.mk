@@ -167,8 +167,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/config/excluded-input-devices.xml:system/etc/excluded-input-devices.xml  	        \
 	$(LOCAL_PATH)/config/bt_addr:system/etc/firmware/bcm4330/bt_addr                                \
-	$(LOCAL_PATH)/config/bt_vendor.conf:system/etc/bluetooth/bt_vendor.conf                         \
-	$(LOCAL_PATH)/config/zram.sh:system/etc/zram.sh
+	$(LOCAL_PATH)/config/bt_vendor.conf:system/etc/bluetooth/bt_vendor.conf
 
 # Magiccode libakim
 PRODUCT_COPY_FILES += \
