@@ -17,6 +17,7 @@ cleanup()
   echo "Cleaning up..."
   [ -z "${sdMount}" ] || sudo umount ${sdMount}
   rm -rf ${tmpDir}
+  rm -rf ${verifyDir}
   [ "${finished}" = "true" ] && sudo eject ${device} && echo "Cleanup completed; it is safe to remove your card"
   trap - EXIT INT TERM
 }
@@ -65,6 +66,7 @@ sfdisk_ci20()
 init_core()
 {
   readonly tmpDir=`mktemp -d`
+  readonly verifyDir=`mktemp -d`
   readonly ubootPrebuiltDir="$ANDROID_BUILD_TOP/device/imgtec/ci20/u-boot"
   #check for U-Boot prebuilt dir
   [ ! -z "${ANDROID_BUILD_TOP}" ] || die "ANDROID_BUILD_TOP has not been initialized"
@@ -76,8 +78,14 @@ init_core()
   grep ${device} /etc/mtab >/dev/null && \
   die "Device '${device}' contains mounted partitions"
 
+  # Check for awk
+  [ -z `which awk 2>&1` ] && die "No 'awk' present"
+
   # Check for bc
   [ -z `which bc 2>&1` ] && die "No 'bc' present"
+
+  # Check for md5sum
+  [ -z `which md5sum 2>&1` ] && die "No 'md5sum' present"
 
   # Check for mkfs.ext4
   [ -z `which mkfs.ext4 2>&1` ] && die "No 'mkfs.ext4' present"
@@ -157,13 +165,14 @@ init_image_constants()
 
   readonly bs_uBootSPL=512
   readonly seek_uBootSPL=1
-  readonly bs_uBootImg="1K"
+  readonly bs_uBootImg=1024
   readonly seek_uBootImg=14
   readonly bs_uBootEnv=1
   readonly seek_uBootEnv=$((526 * 1024))
 
   readonly envText=${tmpDir}/u-boot-env.txt
   readonly envBin=${tmpDir}/u-boot-env.bin
+  readonly envBinNAND=${verifyDir}/u-boot-env-nand.bin
 
   readonly maxBlock=$((128 * 1024 * 1024))
 }
@@ -233,6 +242,7 @@ burn_nand_uboot_env()
   cat ${envText}
   ${ubootPrebuiltDir}/mkenvimage -s ${envSize} -o ${envBin} ${envText}
   sudo cp ${envBin} ${sdMount}/u-boot-env.bin
+  cp ${envBin} ${envBinNAND}
 
   # Delete the file so that NAND U-Boot environment configuration
   # does not get mixed with MMC U-Boot environment configuration
@@ -330,6 +340,56 @@ burn_mmc_uboot()
   burn_mmc_uboot_env
 }
 
+verify_burned_segment()
+{
+  originalChecksum=`md5sum $1 | awk '{print $1}'`
+  copiedChecksum=`sudo md5sum $2 | awk '{print $1}'`
+  if [ "$originalChecksum" != "$copiedChecksum" ]; then
+    die "Burned data mismatch. $1 md5sum does not match md5sum of $2"
+  fi
+}
+
+verify_burned_sd_card()
+{
+  sync
+
+  local bs_verify=1
+  local skip_uBootSPL=$((${bs_uBootSPL} * ${seek_uBootSPL}))
+  local ubootSPLSize=$(stat -c%s ${ubootPrebuiltDir}/mmc/u-boot-spl.bin)
+  sudo dd if=${device} of=${verifyDir}/u-boot-spl.bin bs=${bs_verify} skip=${skip_uBootSPL} count=${ubootSPLSize}
+  verify_burned_segment ${ubootPrebuiltDir}/mmc/u-boot-spl.bin ${verifyDir}/u-boot-spl.bin
+
+  local ubootImageSize=$(stat -c%s ${ubootPrebuiltDir}/mmc/u-boot.img)
+  local skip_uBootImg=$((${bs_uBootImg} * ${seek_uBootImg}))
+  sudo dd if=${device} of=${verifyDir}/u-boot.img bs=${bs_verify} skip=${skip_uBootImg} count=${ubootImageSize}
+  verify_burned_segment ${ubootPrebuiltDir}/mmc/u-boot.img ${verifyDir}/u-boot.img
+
+  local skip_uBootEnv=$((${bs_uBootEnv} * ${seek_uBootEnv}))
+  sudo dd if=${device} of=${verifyDir}/ubootEnv bs=${bs_verify} skip=${skip_uBootEnv} count=${envSize}
+  verify_burned_segment ${envBin} ${verifyDir}/ubootEnv
+
+  verify_burned_segment ${ubootPrebuiltDir}/nand/u-boot-spl.bin ${sdMount}/u-boot-spl.bin
+  verify_burned_segment ${ubootPrebuiltDir}/nand/u-boot.img ${sdMount}/u-boot.img
+  verify_burned_segment ${bootImg} ${sdMount}/boot.img
+  verify_burned_segment ${recoveryImg} ${sdMount}/recovery.img
+  verify_burned_segment ${envBinNAND} ${sdMount}/u-boot-env.bin
+
+  local idx=0
+  local remaining=${systemImgSize}
+  while [ ${remaining} -gt 0 ]; do
+    local currSize=${remaining}
+    [ ${currSize} -le ${maxBlock} ] || currSize=${maxBlock}
+    local currFile="system.ubifs.${idx}"
+    dd if=${systemImg} of=${verifyDir}/${currFile} \
+      bs=${maxBlock} skip=${idx} count=1
+    verify_burned_segment ${verifyDir}/${currFile} ${sdMount}/${currFile}
+    idx=$((${idx} + 1))
+    remaining=$((${remaining} - ${currSize}))
+  done
+
+  echo "Successfully verified SD card content"
+}
+
 init_core $1
 init_constants
 
@@ -343,6 +403,7 @@ echo
 echo "SD contents:"
 ls -hl ${sdMount}/
 
+verify_burned_sd_card
 finished=true
 echo
 echo "Finished, wait for clean up before removing your card!"
