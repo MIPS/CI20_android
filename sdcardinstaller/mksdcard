@@ -1,0 +1,109 @@
+#!/bin/bash
+#
+# Copyright (c) 2017 Imagination Technologies
+# Author: Dragan Cecavac <dragan.cecavac@imgtec.com>
+#
+# Calls the appropriate SD card burn script.
+# Either, mksdcard-ext4 or mksdcard-ubifs
+#
+# Usage:
+#   ./mksdcard /dev/sdX
+#
+
+die()
+{
+	echo "Error: $@" >&2
+	exit 1
+}
+
+check_environment()
+{
+	# Check if device argument was passed
+	[ "$#" -ne 1 ] && die "Please specify the SD card device"
+
+	# Check for diff
+	[ -z `which diff 2>&1` ] && die "No 'diff' present"
+
+	# Check for umount
+	[ -z `which umount 2>&1` ] && die "No 'umount' present"
+
+	# Check if $ANDROID_BUILD_TOP is defined
+	[ -z $ANDROID_BUILD_TOP ] && die '$ANDROID_BUILD_TOP is not defined'
+
+	# Check if $OUT is defined
+	[ -z $OUT ] && die '$OUT is not defined'
+
+	# Check if fstab.ci20 file is present in output directory
+	# It is used to determine if the target filesystem matches the specified filesystem during the build
+	out_fstab="$OUT/root/fstab.ci20"
+	[ ! -f "$out_fstab" ] && die "'$out_fstab' not found"
+
+	# Check if EXT4/F2FS specific fstab file is present
+	ext4_f2fs_fstab="$ANDROID_BUILD_TOP/device/imgtec/ci20/config/fstab-ext4.ci20"
+	[ ! -f "$ext4_f2fs_fstab" ] && die "'$ext4_f2fs_fstab' not found"
+
+	# Check if UBIFS specific fstab file is present
+	ubifs_fstab="$ANDROID_BUILD_TOP/device/imgtec/ci20/config/fstab.ci20"
+	[ ! -f "$ubifs_fstab" ] && die "'$ubifs_fstab' not found"
+}
+
+check_if_ext4_f2fs()
+{
+	# Compare used fstab with original EXT4/F2FS fstab
+	local fstab_diff=`diff -a $out_fstab $ext4_f2fs_fstab`
+
+	if [ -z "$fstab_diff" ]; then
+		is_ext4_f2fs=true
+	else
+		is_ext4_f2fs=false
+	fi
+}
+
+check_if_ubifs()
+{
+	# Compare used fstab with original EXT4/F2FS fstab
+	local fstab_diff=`diff -a $out_fstab $ubifs_fstab`
+
+	if [ -z "$fstab_diff" ]; then
+		is_ubifs=true
+	else
+		is_ubifs=false
+	fi
+}
+
+check_for_errors()
+{
+	if [[ "$is_ext4_f2fs" = false &&  "$is_ubifs" = false  ]]; then
+		die "Built system configuration was not recognized"
+	fi
+
+	if [[ "$is_ext4_f2fs" = true &&  "$is_ubifs" = true  ]]; then
+		die "Built system configuration was recognized as both EXT4/F2FS and UBIFS. Are fstab files about to be merged!?"
+	fi
+}
+
+burn_sd_card()
+{
+	# Unmount the SD card
+	echo "Unmounting $1*"
+	`sudo umount $1*`
+
+	if [ "$is_ext4_f2fs" = true ]; then
+		$ANDROID_BUILD_TOP/device/imgtec/ci20/sdcardinstaller/mksdcard-ext4 $1
+	fi
+
+	if [ "$is_ubifs" = true ]; then
+		$ANDROID_BUILD_TOP/device/imgtec/ci20/sdcardinstaller/mksdcard-ubifs $1
+	fi
+}
+
+do_all_checks()
+{
+	check_environment $1
+	check_if_ext4_f2fs
+	check_if_ubifs
+	check_for_errors
+}
+
+do_all_checks $1
+burn_sd_card $1
