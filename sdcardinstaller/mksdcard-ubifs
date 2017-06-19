@@ -109,13 +109,13 @@ init_partition_layout_constants()
 
   readonly bootVolSize="0x1600000"             #22M
   readonly recoveryVolSize="0x1600000"         #22M
-  if [ "$WITH_GMS" == "true" ]; then
-    readonly systemVolSize="0x40000000"        #1G
-  else
-    readonly systemVolSize="0x28000000"        #640M
-  fi
   readonly cacheVolSize="0x10000000"           #256M
   readonly userdataVolSize="0x100000000"       #4G
+
+  local ubifsScale="64 / 100"
+  local systemImgEXT4Size=`stat -c %s ${systemImgEXT4}`
+  local systemVolSizeDec=$((${systemImgEXT4Size} * ${ubifsScale}))
+  readonly systemVolSize=`echo "ibase=10; obase=16; ${systemVolSizeDec}" | bc`
 }
 
 convert_system_image()
@@ -204,8 +204,8 @@ init_uboot_env_constants()
 
 init_constants()
 {
-  init_partition_layout_constants
   init_image_constants
+  init_partition_layout_constants
   init_uboot_env_constants
 }
 

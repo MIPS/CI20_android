@@ -103,13 +103,12 @@ init_partition_layout_constants()
 
   # Partition sizes and offsets represent size in MB
   readonly bootPartSize=30
-  if [ "$WITH_GMS" == "true" ]; then
-    readonly systemPartSize=1750
-  else
-    readonly systemPartSize=1000
-  fi
   readonly cachePartSize=256
   readonly dataPartSize=2048
+
+  local systemImgSize=`stat -c %s ${systemImg}`
+  local megabyte=$((1024 * 1024))
+  local systemPartSize=$((${systemImgSize} / megabyte))
 
   # 2M is skipped and used for storing U-Boot outside the visible partition layout
   readonly bootPartOffset="2"
@@ -162,8 +161,8 @@ init_uboot_env_constants()
 
 init_constants()
 {
-  init_partition_layout_constants
   init_image_constants
+  init_partition_layout_constants
   init_uboot_env_constants
 }
 
