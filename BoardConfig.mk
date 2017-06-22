@@ -94,6 +94,7 @@ TARGET_RECOVERY_FSTAB = device/imgtec/ci20/config/fstab.ci20
 # FIXME:
 # Do the rest of these belong here?
 TARGET_BOARD_PLATFORM_GPU := SGX540
+SF_START_GRAPHICS_ALLOCATOR_SERVICE := true
 
 TARGET_NO_KERNEL := false
 

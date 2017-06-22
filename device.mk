@@ -140,6 +140,14 @@ PRODUCT_PACKAGES += \
     android.hardware.power@1.0-impl \
     power.xb4780
 
+PRODUCT_PACKAGES += \
+    android.hardware.graphics.allocator@2.0-impl \
+    android.hardware.graphics.mapper@2.0-impl
+
+# Vendor Interface Manifest
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/config/manifest.xml:system/vendor/manifest.xml
+
 #
 # Build libxbomx packages/modules from source:
 #
