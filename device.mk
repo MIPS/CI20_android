@@ -147,6 +147,7 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 PRODUCT_PACKAGES += \
     com.android.future.usb.accessory
 
+$(call inherit-product, frameworks/native/build/tablet-7in-hdpi-1024-dalvik-heap.mk)
 $(call inherit-product, hardware/ingenic/xb4780/libGPU/gpu.mk)
 
 #
