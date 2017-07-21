@@ -162,8 +162,10 @@ PRODUCT_PACKAGES += \
 # WiFi support
 #
 PRODUCT_PACKAGES += \
+    android.hardware.wifi@1.0-service \
     wpa_supplicant \
-    wpa_supplicant.conf
+    wpa_supplicant.conf \
+    wificond
 
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.opengles.version=131072
