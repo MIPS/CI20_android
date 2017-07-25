@@ -6,5 +6,6 @@
 /dev/block/mmcblk0p2                       /system      ext4    ro                       wait
 /dev/block/mmcblk0p3                       /cache       f2fs    defaults                 wait,check
 /dev/block/mmcblk0p4                       /data        f2fs    defaults,nosuid,nodev    wait,check
+/dev/block/zram0                           none         swap    defaults                 zramsize=268435456,notrim
 /devices/ahb2/13500000.jz4780-otg/usb*     auto         vfat    defaults                 voldmanaged=usbdisk1:auto
 /devices/ahb2/13490000.jz4780-ehci/usb*    auto         vfat    defaults                 voldmanaged=usbdisk2:auto

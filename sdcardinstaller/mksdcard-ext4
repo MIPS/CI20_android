@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2013,2014 Imagination Technologies
+# Copyright (c) 2013,2014,2017 Imagination Technologies
 # Original-Author: Paul Burton <paul.burton@imgtec.com>
 #
 # Writes u-boot and Android filesystems to the sd card.
@@ -11,14 +11,13 @@
 #
 
 set -e
-tmpDir=`mktemp -d`
-ubootPrebuiltDir="$ANDROID_BUILD_TOP/device/imgtec/ci20/u-boot"
 
 cleanup()
 {
   echo "Cleaning up..."
   [ -z "${sdMount}" ] || sudo umount ${sdMount}
   rm -rf ${tmpDir}
+  rm -rf ${verifyDir}
   [ "${finished}" = "true" ] && sudo eject ${device} && echo "Cleanup completed; it is safe to remove your card"
   trap - EXIT INT TERM
 }
@@ -64,111 +63,225 @@ sfdisk_ci20()
   sleep 2
 }
 
-#check for U-Boot prebuilt dir
-[ ! -z "${ANDROID_BUILD_TOP}" ] || die "ANDROID_BUILD_TOP has not been initialized"
-[ -e "${ubootPrebuiltDir}" ] || die "U-Boot prebuilt directory '${ubootPrebuiltDir}' does not exist"
+init_core()
+{
+  readonly tmpDir=`mktemp -d`
+  readonly verifyDir=`mktemp -d`
+  readonly ubootPrebuiltDir="$ANDROID_BUILD_TOP/device/imgtec/ci20/u-boot"
+  #check for U-Boot prebuilt dir
+  [ ! -z "${ANDROID_BUILD_TOP}" ] || die "ANDROID_BUILD_TOP has not been initialized"
+  [ -e "${ubootPrebuiltDir}" ] || die "U-Boot prebuilt directory '${ubootPrebuiltDir}' does not exist"
 
-# check device
-device="$1"
-[ -e "${device}" ] || die "Device '${device}' not found"
-grep ${device} /etc/mtab >/dev/null && \
+  readonly device="$1"
+  # check device
+  [ -e "${device}" ] || die "Device '${device}' not found"
+  grep ${device} /etc/mtab >/dev/null && \
   die "Device '${device}' contains mounted partitions"
 
-# check for Android images
-bootImg=${BOOTIMG:-${OUT}/boot.img}
-[ -e "${bootImg}" ] || die "Android boot image '${bootImg}' not found"
-recoveryImg=${RECOVERYIMG:-${OUT}/recovery.img}
-[ -e "${recoveryImg}" ] || die "Android recovery image '${recoveryImg}' not found"
-systemImg=${SYSTEMIMG:-${OUT}/system.img}
-[ -e "${systemImg}" ] || die "Android system image '${systemImg}' not found"
+  # Check for awk
+  [ -z `which awk 2>&1` ] && die "No 'awk' present"
 
-# FIXME: sfdisk often fails to reread the partition information
-sfdisk_ci20 ${device} 2M,30M 32M,1000M 1032M,256M 1288M,2048M
+  # Check for md5sum
+  [ -z `which md5sum 2>&1` ] && die "No 'md5sum' present"
 
-partitions=("Boot" "System" "Cache" "Data")
+  # Check for mkfs.ext4
+  [ -z `which mkfs.ext4 2>&1` ] && die "No 'mkfs.ext4' present"
 
-for((i=4; i>0; i--));
-do
+  # Check for mkfs.f2fs
+  [ -z `which mkfs.f2fs 2>&1` ] && die "No 'mkfs.f2fs' present"
 
-  if [ -e "$device$i" ]; then
-    part=${i}
-  elif [ -e "${device}p$" ]; then
-    part="p${i}"
+  # Check for stat
+  [ -z `which stat 2>&1` ] && die "No 'stat' present"
+
+  return 0
+}
+
+init_partition_layout_constants()
+{
+  partitions=("boot" "system" "cache" "data")
+  readonly partNum=${#partitions[@]}
+
+  # Partition sizes and offsets represent size in MB
+  readonly bootPartSize=30
+  readonly cachePartSize=256
+  readonly dataPartSize=2048
+
+  local systemImgSize=`stat -c %s ${systemImg}`
+  local megabyte=$((1024 * 1024))
+  local systemPartSize=$((${systemImgSize} / megabyte))
+
+  # 2M is skipped and used for storing U-Boot outside the visible partition layout
+  readonly bootPartOffset="2"
+  readonly systemPartOffset=$((${bootPartOffset} + ${bootPartSize}))
+  readonly cachePartOffset=$((${systemPartOffset} + ${systemPartSize}))
+  readonly dataPartOffset=$((${cachePartOffset} + ${cachePartSize}))
+
+  local tmpPartitionLayout="${bootPartOffset}M,${bootPartSize}M"
+  tmpPartitionLayout="${tmpPartitionLayout} ${systemPartOffset}M,${systemPartSize}M"
+  tmpPartitionLayout="${tmpPartitionLayout} ${cachePartOffset}M,${cachePartSize}M"
+  tmpPartitionLayout="${tmpPartitionLayout} ${dataPartOffset}M,${dataPartSize}M"
+  readonly partitionLayout=${tmpPartitionLayout}
+}
+
+init_image_constants()
+{
+  # check for Android images
+  readonly bootImg=${BOOTIMG:-${OUT}/boot.img}
+  [ -e "${bootImg}" ] || die "Android boot image '${bootImg}' not found"
+  readonly recoveryImg=${RECOVERYIMG:-${OUT}/recovery.img}
+  [ -e "${recoveryImg}" ] || die "Android recovery image '${recoveryImg}' not found"
+  readonly systemImg=${SYSTEMIMG:-${OUT}/system.img}
+  [ -e "${systemImg}" ] || die "Android system image '${systemImg}' not found"
+
+  readonly envSize=$((32 * 1024))
+
+  readonly bs_uBootSPL=512
+  readonly seek_uBootSPL=1
+  readonly bs_uBootImg=1024
+  readonly seek_uBootImg=14
+  readonly bs_uBootEnv=1
+  readonly seek_uBootEnv=$((526 * 1024))
+
+  readonly envText=${tmpDir}/u-boot-env.txt
+  readonly envBin=${tmpDir}/u-boot-env.bin
+}
+
+init_uboot_env_constants()
+{
+  readonly mmcPart="mmc 0:1"
+  readonly bootImgAddr=0x88000000
+  readonly baudRate=115200
+  readonly stdioCfg="eserial0,eserial4"
+
+  # Command to boot Android from MMC
+  readonly androidInitCmd="ext4load ${mmcPart} ${bootImgAddr} boot.img; boota ${bootImgAddr}"
+  # Command to set device specific MAC address
+  readonly ethArgs='env set bootargs dm9000.mac_addr=${ethaddr}'
+}
+
+init_constants()
+{
+  init_image_constants
+  init_partition_layout_constants
+  init_uboot_env_constants
+}
+
+configure_sd_card_partitions()
+{
+  sfdisk_ci20 ${device} ${partitionLayout}
+
+  for((i=${partNum}; i>0; i--));
+  do
+
+    if [ -e "$device$i" ]; then
+      part=${i}
+    elif [ -e "${device}p$" ]; then
+      part="p${i}"
+    fi
+
+    if [ $i -eq 2 ]; then
+      readonly partSystem=${part}
+    fi
+
+    if [ $i -le 2 ]; then
+      # Partitions 1 and 2 will be set up as ext4
+      sudo mkfs.ext4 -L "${partitions[$i-1]}" ${device}${part}
+    else
+      # Partitions 3 and 4 will be set up as f2fs
+      sudo mkfs.f2fs -l "${partitions[$i-1]}" ${device}${part}
+    fi
+  done
+
+  # sdMount is not initialized in init_constants()
+  # the way it is used in the cleanup() function
+  readonly sdMount=${tmpDir}/sd_mount
+  mkdir ${sdMount}
+  # mount ext4 partition
+  sudo mount ${device}${part} ${sdMount}
+  sudo chmod a+w ${sdMount}
+}
+
+burn_uboot_env()
+{
+  echo "ainitcmd=${androidInitCmd}" > ${envText}
+  echo "baudrate=${baudRate}" >> ${envText}
+  echo "ethargs=${ethArgs}" >> ${envText}
+  echo "stderr=${stdioCfg}" >> ${envText}
+  echo "stdin=${stdioCfg}" >> ${envText}
+  echo "stdout=${stdioCfg}" >> ${envText}
+  echo "bootcmd=run ethargs; run ainitcmd" >> ${envText}
+  echo
+  echo "MMC U-boot environment:"
+  cat ${envText}
+  ${ubootPrebuiltDir}/mkenvimage -s ${envSize} -o ${envBin} ${envText}
+  sudo dd if=${envBin} of=${device} obs=${bs_uBootEnv} seek=${seek_uBootEnv}
+}
+
+burn_uboot()
+{
+  # install MMC u-boot
+  sudo dd if=${ubootPrebuiltDir}/mmc/u-boot-spl.bin of=${device} obs=${bs_uBootSPL} seek=${seek_uBootSPL}
+  sudo dd if=${ubootPrebuiltDir}/mmc/u-boot.img of=${device} obs=${bs_uBootImg} seek=${seek_uBootImg}
+  burn_uboot_env
+}
+
+burn_android_images()
+{
+  # copy Android boot image
+  sudo cp -v ${bootImg} ${sdMount}/
+
+  # copy Android recovery image
+  sudo cp -v ${recoveryImg} ${sdMount}/
+
+  echo
+  echo "Please wait, writing system.img"
+  sudo dd if=${systemImg} of=${device}${partSystem}
+}
+
+verify_burned_segment()
+{
+  originalChecksum=`md5sum $1 | awk '{print $1}'`
+  copiedChecksum=`sudo md5sum $2 | awk '{print $1}'`
+  if [ "$originalChecksum" != "$copiedChecksum" ]; then
+    die "Burned data mismatch. $1 md5sum does not match md5sum of $2"
   fi
+}
 
-  if [ $i -eq 2 ]; then
-    partSystem=${part}
-  fi
+verify_burned_sd_card()
+{
+  sync
 
-  if [ $i -le 2 ]; then
-    # Partitions 1 and 2 will be set up as ext4
-    sudo mkfs.ext4 -L "${partitions[$i-1]}" ${device}${part}
-  else
-    # Partitions 3 and 4 will be set up as f2fs
-    # mkfs.f2fs command requires f2fs-tools package
-    sudo mkfs.f2fs -l "${partitions[$i-1]}" ${device}${part}
-  fi
-done
+  local bs_verify=1
+  local skip_uBootSPL=$((${bs_uBootSPL} * ${seek_uBootSPL}))
+  local ubootSPLSize=$(stat -c%s ${ubootPrebuiltDir}/mmc/u-boot-spl.bin)
+  sudo dd if=${device} of=${verifyDir}/u-boot-spl.bin bs=${bs_verify} skip=${skip_uBootSPL} count=${ubootSPLSize}
+  verify_burned_segment ${ubootPrebuiltDir}/mmc/u-boot-spl.bin ${verifyDir}/u-boot-spl.bin
 
-# mount ext4 partition
-sdMount=${tmpDir}/sd_mount
-mkdir ${sdMount}
-sudo mount ${device}${part} ${sdMount}
-sudo chmod a+w ${sdMount}
+  local ubootImageSize=$(stat -c%s ${ubootPrebuiltDir}/mmc/u-boot.img)
+  local skip_uBootImg=$((${bs_uBootImg} * ${seek_uBootImg}))
+  sudo dd if=${device} of=${verifyDir}/u-boot.img bs=${bs_verify} skip=${skip_uBootImg} count=${ubootImageSize}
+  verify_burned_segment ${ubootPrebuiltDir}/mmc/u-boot.img ${verifyDir}/u-boot.img
 
-# install MMC u-boot
-sudo dd if=${ubootPrebuiltDir}/mmc/u-boot-spl.bin of=${device} obs=512 seek=1
-sudo dd if=${ubootPrebuiltDir}/mmc/u-boot.img of=${device} obs=1K seek=14
+  local skip_uBootEnv=$((${bs_uBootEnv} * ${seek_uBootEnv}))
+  sudo dd if=${device} of=${verifyDir}/ubootEnv bs=${bs_verify} skip=${skip_uBootEnv} count=${envSize}
+  verify_burned_segment ${envBin} ${verifyDir}/ubootEnv
 
-# copy Android boot image
-sudo cp -v ${bootImg} ${sdMount}/
+  verify_burned_segment ${bootImg} ${sdMount}/boot.img
+  verify_burned_segment ${recoveryImg} ${sdMount}/recovery.img
+  verify_burned_segment ${systemImg} ${device}${partSystem}
 
-# copy Android recovery image
-sudo cp -v ${recoveryImg} ${sdMount}/
+  echo "Successfully verified SD card content"
+}
 
-envText=${tmpDir}/u-boot-env.txt
-envBin=${tmpDir}/u-boot-env.bin
-envSize=$((32 * 1024))
+init_core $1
+init_constants
 
-# Command to boot Android from MMC
-androidInitCmd="ext4load mmc 0:1 0x88000000 boot.img; boota 0x88000000"
-# Command to set device specific MAC address
-ethArgs='env set bootargs ${bootargs} dm9000.mac_addr=${ethaddr}'
+configure_sd_card_partitions
 
-echo "ainitcmd=${androidInitCmd}" >>${envText}
-echo "baudrate=115200" >>${envText}
-echo "ethargs=${ethArgs}" >>${envText}
-echo "stderr=eserial0,eserial4" >>${envText}
-echo "stdin=eserial0,eserial4" >>${envText}
-echo "stdout=eserial0,eserial4" >>${envText}
+burn_android_images
+burn_uboot
 
-# FIXME: Decide what to do after completing the flash setup. For a
-# onetime setup image it's convenient to reset the bootcmd. When using
-# the same sdcard to install multiple times it is not
-oneTime=${ONETIME-false}
-if [ "${oneTime}" = "true" ]; then
-  # Initialise flash then switch to booting Android from MMC
-  echo "bootcmd=run ainitcmd; setenv bootcmd run abootcmd; saveenv" >>${envText}
-else
-  # Initialise flash
-  echo "bootcmd=run ethargs; run ainitcmd" >>${envText}
-fi
-
-echo
-echo "Please wait, writing system.img"
-
-sudo dd if=${systemImg} of=${device}${partSystem}
-
-echo
-echo "MMC U-boot environment:"
-cat ${envText}
-${ubootPrebuiltDir}/mkenvimage -s ${envSize} -o ${envBin} ${envText}
-sudo dd if=${envBin} of=${device} obs=1 seek=$((526 * 1024))
-
-echo
-echo "SD contents:"
-ls -hl ${sdMount}/
-
+verify_burned_sd_card
 finished=true
 echo
 echo "Finished, wait for clean up before removing your card!"

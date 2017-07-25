@@ -1,241 +1,109 @@
 #!/bin/bash
 #
-# Copyright (c) 2013,2014 Imagination Technologies
-# Original-Author: Paul Burton <paul.burton@imgtec.com>
+# Copyright (c) 2017 Imagination Technologies
+# Author: Dragan Cecavac <dragan.cecavac@imgtec.com>
 #
-# Creates an SD card which writes u-boot and Android filesystems to the CI20 NAND flash.
-# Derived from the Debian setup script by Paul Burton
+# Calls the appropriate SD card burn script.
+# Either, mksdcard-ext4 or mksdcard-ubifs
 #
 # Usage:
 #   ./mksdcard /dev/sdX
 #
 
-set -e
-tmpDir=`mktemp -d`
-ubootPrebuiltDir="$ANDROID_BUILD_TOP/device/imgtec/ci20/u-boot"
-
-cleanup()
-{
-  echo "Cleaning up..."
-  [ -z "${sdMount}" ] || sudo umount ${sdMount}
-  rm -rf ${tmpDir}
-  [ "${finished}" = "true" ] && sudo eject ${device} && echo "Cleanup completed; it is safe to remove your card"
-  trap - EXIT INT TERM
-}
-trap cleanup EXIT INT TERM
-
 die()
 {
-  echo "$@" >&2
-  exit 1
+	echo "Error: $@" >&2
+	exit 1
 }
 
-sfdisk_ci20()
+check_environment()
 {
-  sfdisk_tool=`which sfdisk`
-  blockdev_tool=`which blockdev`
-  partprobe_tool=`which partprobe`
+	# Check if device argument was passed
+	[ "$#" -ne 1 ] && die "Please specify the SD card device"
 
-  [ -f "$sfdisk_tool" ] || die "No sfdisk in \$PATH"
-  [ -f "$blockdev_tool" ] || die "No blockdev in \$PATH"
-  [ -f "$partprobe_tool" ] || die "No partprobe in \$PATH"
-  [ -b "$1" ] || die "Device '$1' not found"
+	# Check for diff
+	[ -z `which diff 2>&1` ] && die "No 'diff' present"
 
-  sfdisk_version=`$sfdisk_tool --version | sed 's,.*2\.\([0-9]*\)\.[0-9]*,\1,'`
+	# Check for umount
+	[ -z `which umount 2>&1` ] && die "No 'umount' present"
 
-  unset sfdisk_is_ancient
-  test $sfdisk_version -lt 26 && sfdisk_is_ancient=1
+	# Check if $ANDROID_BUILD_TOP is defined
+	[ -z $ANDROID_BUILD_TOP ] && die '$ANDROID_BUILD_TOP is not defined'
 
-  sfdisk_dev="$1"
-  shift
+	# Check if $OUT is defined
+	[ -z $OUT ] && die '$OUT is not defined'
 
-  sfdisk_parts=`echo $* | tr ' ' '\n'`
+	# Check if fstab.ci20 file is present in output directory
+	# It is used to determine if the target filesystem matches the specified filesystem during the build
+	out_fstab="$OUT/root/fstab.ci20"
+	[ ! -f "$out_fstab" ] && die "'$out_fstab' not found"
 
-  set +e
-  if [ $sfdisk_is_ancient ]; then
-      echo "$sfdisk_parts" | tr -d M | sudo $sfdisk_tool -L -uM "$sfdisk_dev"
-  else
-      echo "$sfdisk_parts" | sudo $sfdisk_tool "$sfdisk_dev"
-  fi
-  set -e
+	# Check if EXT4/F2FS specific fstab file is present
+	ext4_f2fs_fstab="$ANDROID_BUILD_TOP/device/imgtec/ci20/config/fstab-ext4.ci20"
+	[ ! -f "$ext4_f2fs_fstab" ] && die "'$ext4_f2fs_fstab' not found"
 
-  sudo $blockdev_tool --rereadpt $sfdisk_dev
-  sudo $partprobe_tool $sfdisk_dev
-  sleep 2
+	# Check if UBIFS specific fstab file is present
+	ubifs_fstab="$ANDROID_BUILD_TOP/device/imgtec/ci20/config/fstab.ci20"
+	[ ! -f "$ubifs_fstab" ] && die "'$ubifs_fstab' not found"
 }
 
-#check for U-Boot prebuilt dir
-[ ! -z "${ANDROID_BUILD_TOP}" ] || die "ANDROID_BUILD_TOP has not been initialized"
-[ -e "${ubootPrebuiltDir}" ] || die "U-Boot prebuilt directory '${ubootPrebuiltDir}' does not exist"
+check_if_ext4_f2fs()
+{
+	# Compare used fstab with original EXT4/F2FS fstab
+	local fstab_diff=`diff -a $out_fstab $ext4_f2fs_fstab`
 
-# check device
-device="$1"
-[ -e "${device}" ] || die "Device '${device}' not found"
-grep ${device} /etc/mtab >/dev/null && \
-  die "Device '${device}' contains mounted partitions"
+	if [ -z "$fstab_diff" ]; then
+		is_ext4_f2fs=true
+	else
+		is_ext4_f2fs=false
+	fi
+}
 
-# check for Android images
-bootImg=${BOOTIMG:-${OUT}/boot.img}
-[ -e "${bootImg}" ] || die "Android boot image '${bootImg}' not found"
-recoveryImg=${RECOVERYIMG:-${OUT}/recovery.img}
-[ -e "${recoveryImg}" ] || die "Android recovery image '${recoveryImg}' not found"
-systemImgEXT4=${SYSTEMIMG:-${OUT}/system.img}
-[ -e "${systemImgEXT4}" ] || die "Android system image '${systemImgEXT4}' not found"
+check_if_ubifs()
+{
+	# Compare used fstab with original EXT4/F2FS fstab
+	local fstab_diff=`diff -a $out_fstab $ubifs_fstab`
 
-systemImg=${OUT}/system.ubifs.img
-if [[ ! -f $systemImg || "$systemImg" -ot "$systemImgEXT4" ]]; then
-  echo "Converting the image to UBIFS"
-  sh $ANDROID_BUILD_TOP/device/imgtec/ci20/sdcardinstaller/convert_extfs_to_ubifs $systemImgEXT4 $systemImg
-  echo "CI20 specific target system fs done"
-fi
+	if [ -z "$fstab_diff" ]; then
+		is_ubifs=true
+	else
+		is_ubifs=false
+	fi
+}
 
-# Check that systemImg is a ubifs
-# FIXME: unfortunately file(1) is not very helpful...
-file -b "${systemImg}" | grep -q '^data$' || \
-    die "File '${systemImg}' is not a UBI filesystem image"
+check_for_errors()
+{
+	if [[ "$is_ext4_f2fs" = false &&  "$is_ubifs" = false  ]]; then
+		die "Built system configuration was not recognized"
+	fi
 
-# partition SD/MMC card
-# Limit partition size to 1GB (uboot seems to have problems with large (>[24]GB?) filesystems
-# FIXME: sfdisk often fails to reread the parition information
-sfdisk_ci20 ${device} 2M,1024M,L
+	if [[ "$is_ext4_f2fs" = true &&  "$is_ubifs" = true  ]]; then
+		die "Built system configuration was recognized as both EXT4/F2FS and UBIFS. Are fstab files about to be merged!?"
+	fi
+}
 
-# create ext3 partition
-sudo mkfs.ext3 -L "CI20_Android" ${device}1
+burn_sd_card()
+{
+	# Unmount the SD card
+	echo "Unmounting $1*"
+	`sudo umount $1*`
 
-# mount ext3 partition
-sdMount=${tmpDir}/sd_mount
-mkdir ${sdMount}
-sudo mount ${device}1 ${sdMount}
-sudo chmod a+w ${sdMount}
+	if [ "$is_ext4_f2fs" = true ]; then
+		$ANDROID_BUILD_TOP/device/imgtec/ci20/sdcardinstaller/mksdcard-ext4 $1
+	fi
 
-# install MMC u-boot
-sudo dd if=${ubootPrebuiltDir}/mmc/u-boot-spl.bin of=${device} obs=512 seek=1
-sudo dd if=${ubootPrebuiltDir}/mmc/u-boot.img of=${device} obs=1K seek=14
+	if [ "$is_ubifs" = true ]; then
+		$ANDROID_BUILD_TOP/device/imgtec/ci20/sdcardinstaller/mksdcard-ubifs $1
+	fi
+}
 
-# copy NAND u-boot
-sudo cp -v ${ubootPrebuiltDir}/nand/u-boot-spl.bin ${sdMount}/
-sudo cp -v ${ubootPrebuiltDir}/nand/u-boot.img ${sdMount}/
+do_all_checks()
+{
+	check_environment $1
+	check_if_ext4_f2fs
+	check_if_ubifs
+	check_for_errors
+}
 
-# copy Android boot image
-sudo cp -v ${bootImg} ${sdMount}/
-bootImgSize=`stat -c %s ${bootImg}`
-bootImgSizeHex=`echo "ibase=10; obase=16; ${bootImgSize}" | bc`
-
-# copy Android recovery image
-sudo cp -v ${recoveryImg} ${sdMount}/
-recoveryImgSize=`stat -c %s ${recoveryImg}`
-recoveryImgSizeHex=`echo "ibase=10; obase=16; ${recoveryImgSize}" | bc`
-
-# copy Android system image
-# FIXME: copy is done below during MMC environment generation
-# We could copy the system image in one chunk but it would make
-# the installation less verbose
-systemImgSize=`stat -c %s ${systemImg}`
-systemImgSizeHex=`echo "ibase=10; obase=16; ${systemImgSize}" | bc`
-
-envText=${tmpDir}/u-boot-env.txt
-envBin=${tmpDir}/u-boot-env.bin
-envSize=$((32 * 1024))
-
-# generate NAND u-boot environment
-androidBootArgs="debug"
-# Command to boot Android from NAND
-androidBootCmd="mtdparts default; ubi part boot; ubi read 0x88000000 boot ${bootImgSizeHex}; boota 0x88000000"
-# Command to set device specific MAC address
-ethArgs='env set bootargs ${bootargs} dm9000.mac_addr=${ethaddr}'
-
-echo "bootargs=${androidBootArgs}" >${envText}
-echo "abootcmd=${androidBootCmd}" >>${envText}
-echo "bootcmd=run ethargs; run abootcmd" >>${envText}
-echo "baudrate=115200" >>${envText}
-echo "ethargs=${ethArgs}" >>${envText}
-echo "stderr=eserial0,eserial4" >>${envText}
-echo "stdin=eserial0,eserial4" >>${envText}
-echo "stdout=eserial0,eserial4" >>${envText}
-
-echo
-echo "NAND U-boot environment:"
-cat ${envText}
-${ubootPrebuiltDir}/mkenvimage -s ${envSize} -o ${envBin} ${envText}
-sudo cp ${envBin} ${sdMount}/u-boot-env.bin
-
-# generate (SD/MMC) u-boot environment
-androidInitCmd="mw.l 0xb0010548 0x8000; \
-nand erase.chip; \
-ext4load mmc 0:1 0x80000000 u-boot-spl.bin; \
-writespl 0x80000000 8; \
-mtdparts default; \
-ext4load mmc 0:1 0x80000000 u-boot.img; \
-nand write 0x80000000 0x800000 0x80000; \
-ext4load mmc 0:1 0x80000000 u-boot-env.bin; \
-nand write 0x80000000 0x00a00000 ${envSize}; \
-ubi part boot; \
-ubi create boot 0x1600000; \
-ubi create recovery 0x1600000; \
-ext4load mmc 0:1 0x80000000 boot.img; \
-ubi write 0x80000000 boot ${bootImgSizeHex}; \
-ext4load mmc 0:1 0x80000000 recovery.img; \
-ubi write 0x80000000 recovery ${recoveryImgSizeHex}; \
-ubi part system; \
-ubi create system 0x28000000; \
-ubi create cache 0x10000000; \
-ubi create userdata 0x100000000; \
-run flash_system0"
-# Command to boot Android from MMC
-androidBootCmd="ext4load mmc 0:1 0x88000000 boot.img; boota 0x88000000"
-
-echo "bootargs=${androidBootArgs}" >${envText}
-echo "abootcmd=${androidBootCmd}" >>${envText}
-echo "ainitcmd=${androidInitCmd}" >>${envText}
-echo "baudrate=115200" >>${envText}
-echo "stderr=eserial0,eserial4" >>${envText}
-echo "stdin=eserial0,eserial4" >>${envText}
-echo "stdout=eserial0,eserial4" >>${envText}
-
-# FIXME: Decide what to do after completing the flash setup. For a
-# onetime setup image it's convenient to reset the bootcmd. When using
-# the same sdcard to install multiple times it is not
-oneTime=${ONETIME-false}
-if [ "${oneTime}" = "true" ]; then
-  # Initialise flash then switch to booting Android from MMC
-  echo "bootcmd=run ainitcmd; setenv bootcmd run abootcmd; saveenv" >>${envText}
-else
-  # Initialise flash
-  echo "bootcmd=run ainitcmd" >>${envText}
-fi
-
-idx=0
-remaining=${systemImgSize}
-maxBlock=$((128 * 1024 * 1024))
-while [ ${remaining} -gt 0 ]; do
-  currSize=${remaining}
-  [ ${currSize} -le $((128 * 1024 * 1024)) ] || currSize=${maxBlock}
-  currSizeHex=`echo "ibase=10; obase=16; ${currSize}" | bc`
-  currFile="system.ubifs.${idx}"
-  echo "Creating ${currFile}"
-  sudo dd if=${systemImg} of=${sdMount}/${currFile} \
-    bs=${maxBlock} skip=${idx} count=1
-  fullSize=""
-  [ ${idx} -gt 0 ] || fullSize="${systemImgSizeHex}"
-  flashCmd="ext4load mmc 0:1 0x80000000 ${currFile};"
-  flashCmd="${flashCmd} ubi write.part 0x80000000 system ${currSizeHex} ${fullSize};"
-  flashCmd="${flashCmd} run flash_system$((${idx} + 1))"
-  echo "flash_system${idx}=${flashCmd}" >>${envText}
-  idx=$((${idx} + 1))
-  remaining=$((${remaining} - ${currSize}))
-done
-echo "flash_system${idx}=mw.l 0xb0010544 0x8000; echo All done :)" >>${envText}
-
-echo
-echo "MMC U-boot environment:"
-cat ${envText}
-${ubootPrebuiltDir}/mkenvimage -s ${envSize} -o ${envBin} ${envText}
-sudo dd if=${envBin} of=${device} obs=1 seek=$((526 * 1024))
-
-echo
-echo "SD contents:"
-ls -hl ${sdMount}/
-
-finished=true
-echo
-echo "Finished, wait for clean up before removing your card!"
+do_all_checks $1
+burn_sd_card $1

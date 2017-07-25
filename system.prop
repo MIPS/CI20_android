@@ -30,7 +30,6 @@ ro.board.hdmi.support=true
 ro.board.tvout.support=false
 ro.board.hasethernet=ethernet
 testing.mediascanner.skiplist=/storage/host-udisk/,/storage/udisk/
-dalvik.vm.heapsize=60m
 ro.sf.lcd_density=160
 
 
