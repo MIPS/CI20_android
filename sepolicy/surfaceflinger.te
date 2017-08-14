@@ -1,3 +1,4 @@
 #============= surfaceflinger ==============
+hal_server_domain(surfaceflinger, hal_graphics_allocator)
 allow surfaceflinger device:chr_file ioctl;
 allow surfaceflinger ion_device:chr_file write;
