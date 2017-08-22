@@ -39,6 +39,7 @@ endif
 PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/config/gpio-keys.kl:/system/usr/keylayout/gpio-keys.kl
 
+USE_CUSTOM_AUDIO_POLICY := 1
 USE_XML_AUDIO_POLICY_CONF := 1
 
 # Audio policy
@@ -121,6 +122,11 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libbt-vendor \
     android.hardware.bluetooth@1.0-impl
+
+# Camera HAL
+PRODUCT_PACKAGES += \
+    camera.xb4780 \
+    android.hardware.camera.provider@2.4-impl
 
 # Keymaster HAL
 PRODUCT_PACKAGES += \
