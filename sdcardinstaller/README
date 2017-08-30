@@ -28,6 +28,12 @@ To use:
 
 3. Fastboot usage:
 
+	The simplest way to flash all images is by using script fastboot-flash-all which takes care of
+	file system specific restrictions. This script will reboot the board to fastboot if needed and
+	perform all necessary flashing. (It will also perform image converting for UBIFS.) You will have to
+	specify device_id in case of multiple boards attached to the host.
+	If you are using this script, feel free to ignore the rest of "3. Fastboot usage".
+
 	Fastboot functionality does not behave similarly on UBIFS and EXT4 set-ups.
 	Important differences are related to cache.img, system.img and userdata.img flashing.
 
@@ -47,13 +53,13 @@ To use:
 	To bring the device to fastboot mode, run the following command once the Android enables adb connection:
 		$ adb reboot-bootloader
 
-	3.1. For flashing images on UBIFS system set-up, use the following commands:
+	3.1. For flashing images on EXT4/F2FS system set-up, use the following commands:
 
 		$ fastboot flash cache
 		$ fastboot flash userdata
 		$ fastboot flashall
 
-	3.2. For flashing images on EXT4/F2FS system set-up, use the following commands:
+	3.2. For flashing images on UBIFS system set-up, use the following commands:
 
 		$ fastboot erase cache
 		$ fastboot erase userdata
