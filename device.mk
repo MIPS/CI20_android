@@ -292,8 +292,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
         net.dns1=8.8.8.8 \
         net.dns2=8.8.4.4
 
-# add chromium browser
 PRODUCT_PACKAGES +=     \
-    ChromePublic
+    ChromePublic \
+    Launcher3
 
 #$(call inherit-product-if-exists, hardware/broadcom/wlan/bcmdhd/firmware/bcm4324/device-bcm.mk)
