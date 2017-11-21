@@ -269,6 +269,7 @@ burn_system_image()
     echo "Please wait, writing ${currFile}"
     sudo dd if=${systemImg} of=${sdMount}/${currFile} \
       bs=${maxBlock} skip=${idx} count=1
+    sync
     local fullSize=""
     [ ${idx} -gt 0 ] || fullSize="${systemImgSizeHex}"
     local flashCmd="ext4load ${mmcPart} ${lsMemAddr} ${currFile};"
