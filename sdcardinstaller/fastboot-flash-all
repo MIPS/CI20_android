@@ -53,7 +53,7 @@ check_environment()
 	[ ! -f "$OUT/boot.img" ] && die "Android boot image '$OUT/boot.img' not found"
 
 	# Check if recovery.img exists
-	[ ! -f "$OUT/recovery.img" ] && die "Android boot image '$OUT/recovery.img' not found"
+	[ ! -f "$OUT/recovery.img" ] && die "Android recovery image '$OUT/recovery.img' not found"
 
 	systemImgExt4="$OUT/system.img"
 	# Check if EXT4 system.img exists
@@ -71,10 +71,10 @@ check_ext4_f2fs_environment()
 	[ -n "$fstab_diff" ] && die "Build and target do not have the same filesystem set-up"
 
 	# Check if cache.img exists
-	[ ! -f "$OUT/cache.img" ] && die "Android boot image '$OUT/cache.img' not found"
+	[ ! -f "$OUT/cache.img" ] && die "Android cache image '$OUT/cache.img' not found"
 
 	# Check if userdata.img exists
-	[ ! -f "$OUT/userdata.img" ] && die "Android boot image '$OUT/userdata.img' not found"
+	[ ! -f "$OUT/userdata.img" ] && die "Android userdata image '$OUT/userdata.img' not found"
 }
 
 check_ubifs_environment()
