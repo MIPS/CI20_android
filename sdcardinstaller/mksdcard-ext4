@@ -133,6 +133,9 @@ init_image_constants()
   readonly systemImg=${SYSTEMIMG:-${OUT}/system.img}
   [ -e "${systemImg}" ] || die "Android system image '${systemImg}' not found"
 
+  readonly dtb=$ANDROID_BUILD_TOP/device/imgtec/ci20/dtb/ci20-sdcard.dtb
+  [ -e "${dtb}" ] || die "Kernel device tree blob '${dtb}' not found"
+
   readonly envSize=$((32 * 1024))
 
   readonly bs_uBootSPL=512
@@ -150,13 +153,16 @@ init_uboot_env_constants()
 {
   readonly mmcPart="mmc 0:1"
   readonly bootImgAddr=0x88000000
+  readonly dtbAddr=0x87000000
   readonly baudRate=115200
   readonly stdioCfg="eserial0,eserial4"
 
   # Command to boot Android from MMC
-  readonly androidInitCmd="ext4load ${mmcPart} ${bootImgAddr} boot.img; boota ${bootImgAddr}"
+  readonly androidInitCmd="ext4load ${mmcPart} ${bootImgAddr} boot.img; run dtbcmd; boota ${bootImgAddr}"
   # Command to set device specific MAC address
   readonly ethArgs='env set bootargs dm9000.mac_addr=${ethaddr}'
+  # Command for loading device tree blob
+  readonly dtbCmd="env set bootargs \""'${bootargs}'" dtb_addr=$dtbAddr\"; ext4load ${mmcPart} ${dtbAddr} jz4780.dtb;"
 }
 
 init_constants()
@@ -206,6 +212,7 @@ burn_uboot_env()
   echo "ainitcmd=${androidInitCmd}" > ${envText}
   echo "baudrate=${baudRate}" >> ${envText}
   echo "ethargs=${ethArgs}" >> ${envText}
+  echo "dtbcmd=${dtbCmd}" >> ${envText}
   echo "stderr=${stdioCfg}" >> ${envText}
   echo "stdin=${stdioCfg}" >> ${envText}
   echo "stdout=${stdioCfg}" >> ${envText}
@@ -232,6 +239,9 @@ burn_android_images()
 
   # copy Android recovery image
   sudo cp -v ${recoveryImg} ${sdMount}/
+
+  # copy kernel device tree blob
+  sudo cp -v ${dtb} ${sdMount}/jz4780.dtb
 
   echo
   echo "Please wait, writing system.img"
@@ -269,6 +279,7 @@ verify_burned_sd_card()
   verify_burned_segment ${bootImg} ${sdMount}/boot.img
   verify_burned_segment ${recoveryImg} ${sdMount}/recovery.img
   verify_burned_segment ${systemImg} ${device}${partSystem}
+  verify_burned_segment ${dtb} ${sdMount}/jz4780.dtb
 
   echo "Successfully verified SD card content"
 }
