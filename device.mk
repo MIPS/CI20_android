@@ -152,7 +152,7 @@ PRODUCT_PACKAGES += \
 
 # Vendor Interface Manifest
 PRODUCT_COPY_FILES += \
-    $(LOCAL_PATH)/config/manifest.xml:system/vendor/manifest.xml
+    $(LOCAL_PATH)/config/manifest.xml:vendor/manifest.xml
 
 #
 # Build libxbomx packages/modules from source:
@@ -218,7 +218,7 @@ PRODUCT_COPY_FILES += \
 
 # Magiccode libakim
 PRODUCT_COPY_FILES += \
-        $(LOCAL_PATH)/akim/libakim.so:/system/vendor/lib/libakim.so \
+        $(LOCAL_PATH)/akim/libakim.so:vendor/lib/libakim.so \
         $(LOCAL_PATH)/akim/magiccode_prefs.xml:/system/etc/magiccode_prefs.xml
 
 #

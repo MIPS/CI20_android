@@ -112,6 +112,7 @@ init_partition_layout_constants()
   readonly dtbVolSize="0x800000"               #8M
   readonly cacheVolSize="0x10000000"           #256M
   readonly userdataVolSize="0x100000000"       #4G
+  readonly vendorVolSize="0x4000000"           #64M
 
   local ubifsScale="64 / 100"
   local systemImgEXT4Size=`stat -c %s ${systemImgEXT4}`
@@ -122,7 +123,7 @@ init_partition_layout_constants()
 convert_system_image()
 {
   if [[ ! -f $systemImg || "$systemImg" -ot "$systemImgEXT4" ]]; then
-    echo "Converting the image to UBIFS"
+    echo "Converting system image to UBIFS"
     sh $ANDROID_BUILD_TOP/device/imgtec/ci20/sdcardinstaller/convert_extfs_to_ubifs $systemImgEXT4 $systemImg
     echo "CI20 specific target system fs done"
   fi
@@ -131,6 +132,20 @@ convert_system_image()
   # FIXME: unfortunately file(1) is not very helpful...
   file -b "${systemImg}" | grep -q '^data$' || \
       die "File '${systemImg}' is not a UBI filesystem image"
+}
+
+convert_vendor_image()
+{
+  if [[ ! -f $vendorImg || "vendorImg" -ot "$vendorImgEXT4" ]]; then
+    echo "Converting vendor image to UBIFS"
+    sh $ANDROID_BUILD_TOP/device/imgtec/ci20/sdcardinstaller/convert_extfs_to_ubifs $vendorImgEXT4 $vendorImg
+    echo "CI20 specific target system fs done"
+  fi
+
+  # Check that vendorImg is a ubifs
+  # FIXME: unfortunately file(1) is not very helpful...
+  file -b "${vendorImg}" | grep -q '^data$' || \
+      die "File '${vendorImg}' is not a UBI filesystem image"
 }
 
 init_image_constants()
@@ -146,6 +161,10 @@ init_image_constants()
 
   readonly dtb=$ANDROID_BUILD_TOP/device/imgtec/ci20/dtb/ci20-nand.dtb
   [ -e "${dtb}" ] || die "Kernel device tree blob '${dtb}' not found"
+
+  readonly vendorImgEXT4=${VENDORIMG:-${OUT}/vendor.img}
+  [ -e "${vendorImgEXT4}" ] || die "Android vendor image '${vendorImgEXT4}' not found"
+  readonly vendorImg=${OUT}/vendor.ubifs.img
 
   local bootImgSize=`stat -c %s ${bootImg}`
   readonly bootImgSizeHex=`echo "ibase=10; obase=16; ${bootImgSize}" | bc`
@@ -167,6 +186,10 @@ init_image_constants()
   convert_system_image
   readonly systemImgSize=`stat -c %s ${systemImg}`
   readonly systemImgSizeHex=`echo "ibase=10; obase=16; ${systemImgSize}" | bc`
+
+  convert_vendor_image
+  readonly vendorImgSize=`stat -c %s ${vendorImg}`
+  readonly vendorImgSizeHex=`echo "ibase=10; obase=16; ${vendorImgSize}" | bc`
 
   readonly envSize=$((32 * 1024))
 
@@ -304,6 +327,9 @@ burn_android_images()
   # copy kernel device tree blob
   sudo cp -v ${dtb} ${sdMount}/jz4780.dtb
 
+  # copy Android vendor image
+  sudo cp -v ${vendorImg} ${sdMount}/
+
   burn_system_image
 }
 
@@ -333,6 +359,9 @@ burn_mmc_uboot_env()
   ubi create system ${systemVolSize}; \
   ubi create cache ${cacheVolSize}; \
   ubi create userdata ${userdataVolSize}; \
+  ubi create vendor ${vendorVolSize}; \
+  ext4load ${mmcPart} ${lsMemAddr} vendor.ubifs.img; \
+  ubi write ${lsMemAddr} vendor ${vendorImgSizeHex}; \
   run flash_system0"
 
   echo "abootcmd=${androidBootCmd}" >> ${envText}
@@ -392,6 +421,7 @@ verify_burned_sd_card()
   verify_burned_segment ${dtb} ${sdMount}/jz4780.dtb
   verify_burned_segment ${recoveryImg} ${sdMount}/recovery.img
   verify_burned_segment ${envBinNAND} ${sdMount}/u-boot-env.bin
+  verify_burned_segment ${vendorImg} ${sdMount}/vendor.ubifs.img
 
   local idx=0
   local remaining=${systemImgSize}

@@ -1,0 +1,27 @@
+
+&fw {
+	android {
+		hardware = "ci20";
+		compatible = "android,firmware";
+
+		fstab {
+			compatible = "android,fstab";
+
+			system {
+				type = "ubifs";
+				mnt_flags = "ro";
+				fsmgr_flags = "wait";
+				dev = "/dev/ubi/ubi0/by-name/system";
+				compatible = "android,system";
+			};
+
+			vendor {
+				type = "ubifs";
+				mnt_flags = "ro";
+				fsmgr_flags = "wait";
+				dev = "/dev/ubi/ubi0/by-name/vendor";
+				compatible = "android,vendor";
+			};
+		};
+	};
+};
