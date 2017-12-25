@@ -1,0 +1,2 @@
+#============= system_server ==============
+allow system_server ion_device:chr_file write;
