@@ -70,6 +70,10 @@ check_ext4_f2fs_environment()
 	local fstab_diff=`diff -a $out_fstab $ext4_f2fs_fstab`
 	[ -n "$fstab_diff" ] && die "Build and target do not have the same filesystem set-up"
 
+	# Check if device tree blob exists
+	dtb="$ANDROID_BUILD_TOP/device/imgtec/ci20/dtb/ci20-sdcard.dtb"
+	[ ! -f "$dtb" ] && die "'$dtb' not found"
+
 	# Check if cache.img exists
 	[ ! -f "$OUT/cache.img" ] && die "Android cache image '$OUT/cache.img' not found"
 
@@ -86,6 +90,10 @@ check_ubifs_environment()
 	# Report error if android has not been built for the same filesystem as on the target
 	local fstab_diff=`diff -a $out_fstab $ubifs_fstab`
 	[ -n "$fstab_diff" ] && die "Build and target do not have the same filesystem set-up"
+
+	# Check if device tree blob exists
+	dtb="$ANDROID_BUILD_TOP/device/imgtec/ci20/dtb/ci20-nand.dtb"
+	[ ! -f "$dtb" ] && die "'$dtb' not found"
 
 	systemImgUbifs=${OUT}/system.ubifs.img
 	if [[ ! -f $systemImgUbifs || "$systemImgUbifs" -ot "$systemImgExt4" ]]; then
@@ -152,6 +160,7 @@ flash_all_ext4_f2fs()
 {
 	fastboot $device_id_option flash cache
 	fastboot $device_id_option flash userdata
+	fastboot $device_id_option flash dtb $dtb
 	fastboot $device_id_option flashall
 }
 
@@ -159,6 +168,7 @@ flash_all_ubifs()
 {
 	fastboot $device_id_option erase cache
 	fastboot $device_id_option erase userdata
+	fastboot $device_id_option flash dtb $dtb
 	fastboot $device_id_option flash boot
 	fastboot $device_id_option flash recovery
 	fastboot $device_id_option flash system $systemImgUbifs
