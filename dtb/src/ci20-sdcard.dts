@@ -1,0 +1,27 @@
+
+&fw {
+	android {
+		hardware = "ci20";
+		compatible = "android,firmware";
+
+		fstab {
+			compatible = "android,fstab";
+
+			system {
+				type = "ext4";
+				mnt_flags = "ro";
+				fsmgr_flags = "wait";
+				dev = "/dev/block/platform/ahb2/13450000.msc/by-name/system";
+				compatible = "android,system";
+			};
+
+			vendor {
+				type = "ext4";
+				mnt_flags = "ro";
+				fsmgr_flags = "wait";
+				dev = "/dev/block/platform/ahb2/13450000.msc/by-name/vendor";
+				compatible = "android,vendor";
+			};
+		};
+	};
+};

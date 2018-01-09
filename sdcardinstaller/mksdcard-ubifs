@@ -107,10 +107,12 @@ init_partition_layout_constants()
 
   readonly partitionLayout="${partOffset}M,${partSize}M"
 
-  readonly bootVolSize="0x1600000"             #22M
-  readonly recoveryVolSize="0x1600000"         #22M
+  readonly bootVolSize="0x1300000"             #19M
+  readonly recoveryVolSize="0x1300000"         #19M
+  readonly dtbVolSize="0x800000"               #8M
   readonly cacheVolSize="0x10000000"           #256M
   readonly userdataVolSize="0x100000000"       #4G
+  readonly vendorVolSize="0x4000000"           #64M
 
   local ubifsScale="64 / 100"
   local systemImgEXT4Size=`stat -c %s ${systemImgEXT4}`
@@ -121,7 +123,7 @@ init_partition_layout_constants()
 convert_system_image()
 {
   if [[ ! -f $systemImg || "$systemImg" -ot "$systemImgEXT4" ]]; then
-    echo "Converting the image to UBIFS"
+    echo "Converting system image to UBIFS"
     sh $ANDROID_BUILD_TOP/device/imgtec/ci20/sdcardinstaller/convert_extfs_to_ubifs $systemImgEXT4 $systemImg
     echo "CI20 specific target system fs done"
   fi
@@ -130,6 +132,20 @@ convert_system_image()
   # FIXME: unfortunately file(1) is not very helpful...
   file -b "${systemImg}" | grep -q '^data$' || \
       die "File '${systemImg}' is not a UBI filesystem image"
+}
+
+convert_vendor_image()
+{
+  if [[ ! -f $vendorImg || "vendorImg" -ot "$vendorImgEXT4" ]]; then
+    echo "Converting vendor image to UBIFS"
+    sh $ANDROID_BUILD_TOP/device/imgtec/ci20/sdcardinstaller/convert_extfs_to_ubifs $vendorImgEXT4 $vendorImg
+    echo "CI20 specific target system fs done"
+  fi
+
+  # Check that vendorImg is a ubifs
+  # FIXME: unfortunately file(1) is not very helpful...
+  file -b "${vendorImg}" | grep -q '^data$' || \
+      die "File '${vendorImg}' is not a UBI filesystem image"
 }
 
 init_image_constants()
@@ -143,11 +159,21 @@ init_image_constants()
   [ -e "${systemImgEXT4}" ] || die "Android system image '${systemImgEXT4}' not found"
   readonly systemImg=${OUT}/system.ubifs.img
 
+  readonly dtb=$ANDROID_BUILD_TOP/device/imgtec/ci20/dtb/ci20-nand.dtb
+  [ -e "${dtb}" ] || die "Kernel device tree blob '${dtb}' not found"
+
+  readonly vendorImgEXT4=${VENDORIMG:-${OUT}/vendor.img}
+  [ -e "${vendorImgEXT4}" ] || die "Android vendor image '${vendorImgEXT4}' not found"
+  readonly vendorImg=${OUT}/vendor.ubifs.img
+
   local bootImgSize=`stat -c %s ${bootImg}`
   readonly bootImgSizeHex=`echo "ibase=10; obase=16; ${bootImgSize}" | bc`
 
   local recoveryImgSize=`stat -c %s ${recoveryImg}`
   readonly recoveryImgSizeHex=`echo "ibase=10; obase=16; ${recoveryImgSize}" | bc`
+
+  local dtbSize=`stat -c %s ${dtb}`
+  readonly dtbSizeHex=`echo "ibase=10; obase=16; ${bootImgSize}" | bc`
 
   # Size of NAND U-Boot image
   local ubootImgSize=`stat -c %s ${ubootPrebuiltDir}/nand/u-boot.img`
@@ -160,6 +186,10 @@ init_image_constants()
   convert_system_image
   readonly systemImgSize=`stat -c %s ${systemImg}`
   readonly systemImgSizeHex=`echo "ibase=10; obase=16; ${systemImgSize}" | bc`
+
+  convert_vendor_image
+  readonly vendorImgSize=`stat -c %s ${vendorImg}`
+  readonly vendorImgSizeHex=`echo "ibase=10; obase=16; ${vendorImgSize}" | bc`
 
   readonly envSize=$((32 * 1024))
 
@@ -181,13 +211,16 @@ init_uboot_env_constants()
 {
   readonly mmcPart="mmc 0:1"
   readonly bootImgAddr="0x88000000"
+  readonly dtbAddr="0x87000000"
   readonly baudRate=115200
   readonly stdioCfg="eserial0,eserial4"
 
   # Command to boot Android from NAND
-  readonly androidBootCmd="mtdparts default; ubi part boot; ubi read ${bootImgAddr} boot ${bootImgSizeHex}; boota ${bootImgAddr}"
+  readonly androidBootCmd="mtdparts default; ubi part boot; ubi read ${bootImgAddr} boot ${bootImgSizeHex}; run dtbcmd; boota ${bootImgAddr}"
   # Command to set device specific MAC address
   readonly ethArgs='env set bootargs dm9000.mac_addr=${ethaddr}'
+  # Command for loading device tree blob
+  readonly dtbCmd="env set bootargs \""'${bootargs}'" dtb_addr=$dtbAddr\"; ubi read ${dtbAddr} dtb ${dtbSizeHex}"
 
   # Commands for changing the LED color
   readonly blueLED="mw.l 0xb0010548 0x8000"
@@ -233,6 +266,7 @@ burn_nand_uboot_env()
   echo "bootcmd=run ethargs; run abootcmd" >> ${envText}
   echo "baudrate=${baudRate}" >> ${envText}
   echo "ethargs=${ethArgs}" >> ${envText}
+  echo "dtbcmd=${dtbCmd}" >> ${envText}
   echo "stderr=${stdioCfg}" >> ${envText}
   echo "stdin=${stdioCfg}" >> ${envText}
   echo "stdout=${stdioCfg}" >> ${envText}
@@ -290,6 +324,12 @@ burn_android_images()
   # copy Android recovery image
   sudo cp -v ${recoveryImg} ${sdMount}/
 
+  # copy kernel device tree blob
+  sudo cp -v ${dtb} ${sdMount}/jz4780.dtb
+
+  # copy Android vendor image
+  sudo cp -v ${vendorImg} ${sdMount}/
+
   burn_system_image
 }
 
@@ -308,14 +348,20 @@ burn_mmc_uboot_env()
   ubi part boot; \
   ubi create boot ${bootVolSize}; \
   ubi create recovery ${recoveryVolSize}; \
+  ubi create dtb ${dtbVolSize}; \
   ext4load ${mmcPart} ${lsMemAddr} boot.img; \
   ubi write ${lsMemAddr} boot ${bootImgSizeHex}; \
   ext4load ${mmcPart} ${lsMemAddr} recovery.img; \
   ubi write ${lsMemAddr} recovery ${recoveryImgSizeHex}; \
+  ext4load ${mmcPart} ${lsMemAddr} jz4780.dtb; \
+  ubi write ${lsMemAddr} dtb ${dtbSizeHex}; \
   ubi part system; \
   ubi create system ${systemVolSize}; \
   ubi create cache ${cacheVolSize}; \
   ubi create userdata ${userdataVolSize}; \
+  ubi create vendor ${vendorVolSize}; \
+  ext4load ${mmcPart} ${lsMemAddr} vendor.ubifs.img; \
+  ubi write ${lsMemAddr} vendor ${vendorImgSizeHex}; \
   run flash_system0"
 
   echo "abootcmd=${androidBootCmd}" >> ${envText}
@@ -372,8 +418,10 @@ verify_burned_sd_card()
   verify_burned_segment ${ubootPrebuiltDir}/nand/u-boot-spl.bin ${sdMount}/u-boot-spl.bin
   verify_burned_segment ${ubootPrebuiltDir}/nand/u-boot.img ${sdMount}/u-boot.img
   verify_burned_segment ${bootImg} ${sdMount}/boot.img
+  verify_burned_segment ${dtb} ${sdMount}/jz4780.dtb
   verify_burned_segment ${recoveryImg} ${sdMount}/recovery.img
   verify_burned_segment ${envBinNAND} ${sdMount}/u-boot-env.bin
+  verify_burned_segment ${vendorImg} ${sdMount}/vendor.ubifs.img
 
   local idx=0
   local remaining=${systemImgSize}

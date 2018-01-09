@@ -1,0 +1,10 @@
+#============= ueventd ==============
+# FIXME: are all of these rules needed?
+allow ueventd tmpfs:dir write;
+allow ueventd tmpfs:dir add_name;
+allow ueventd tmpfs:lnk_file create;
+
+allow ueventd mtd_device:chr_file r_file_perms;
+
+allow ueventd configfs:{ file lnk_file } create_file_perms;
+allow ueventd configfs:dir create_dir_perms;
