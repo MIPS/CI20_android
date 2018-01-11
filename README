@@ -1,13 +1,15 @@
 
-Initialize the environment with the envsetup.sh script. Assuming you
-are at the top of the Android source tree:
+Building Android
+================
+1. Initialize the environment with the envsetup.sh script. Assuming you
+   are at the top of the Android source tree:
     $ export TOP=`pwd`
     $ . build/envsetup.sh
 
-Choose target.
+2. Choose target.
     $ lunch aosp_ci20-userdebug
 
-Build everything.
+3. Build everything.
 
 - UBIFS:
     $ make -j24
@@ -15,27 +17,82 @@ Build everything.
 - EXT4:
     $ make WITH_EXT4=true -j24
 
-Generate an SDCARD image containing the Android compatible u-boot and
-Android boot/recovery/system images.
+Flashing Android to device
+==========================
+
+This procedure is only usable when you already have a functional Android running
+on the board and the latest U-Boot version. Additionally, if partition sizes
+on the board's SD card do not match sizes of the partitions that you want to
+flash, then you will also have to use "Flashing Android to SD card" procedure or
+"Flashing Android to NAND" procedure.
+
+1. Connect the device to PC by USB cable and plug charger into the device.
+
+2. Run the script for flashing Android to the device
+    $ cd $TOP/device/imgtec/ci20/sdcardinstaller
+    $ ./fastboot-flash-all
+
+The fastboot process takes approximately 6 minutes.
+
+Flashing Android to NAND (UBIFS)
+========================================
+
+This procedure is usable in all cases.
+
+1. Make note of which Linux device represents the SD card.
+   On my system it's /dev/sde. You'll need to adjust the instructions
+   in this section to match the SD card device on your system.
+
+   $ sudo dd if=/dev/zero of=/dev/sdX bs=512 count=1
+
+   This step may not be needed. Typically, it's needed only if the SD
+   card was previously formatted for use as VFAT device. In any case,
+   running this extra step doesn't hurt anything.
+
+2. Generate an SDCARD image containing the Android compatible u-boot and
+   Android boot/recovery/system images.
 
     $ cd $TOP/device/imgtec/ci20/sdcardinstaller
     $ ./mksdcard /dev/sdX
 
-Install Android on CI20. Set the JP3 link to 2-3 to enable boot from
-SDCARD. Install the SDCARD and powercycle the board. u-boot will
-start up and automatically reformat the flash and install both u-boot
-and Android to it. After it has completed you should see something
-like:
+3. Install Android on CI20. Set the JP3 link to 2-3 to enable boot from
+   SDCARD. Install the SD card and power cycle the board. u-boot will
+   start up and automatically reformat the flash and install both u-boot
+   and Android to it. After it has completed you should see something
+   like:
 
-> 134217728 bytes read in 19742 ms (6.5 MiB/s)
-> 134217728 bytes written to volume system
-> 9338880 bytes read in 1440 ms (6.2 MiB/s)
-> 9338880 bytes written to volume system
-> All done :)
+   > 134217728 bytes read in 19742 ms (6.5 MiB/s)
+   > 134217728 bytes written to volume system
+   > 9338880 bytes read in 1440 ms (6.2 MiB/s)
+   > 9338880 bytes written to volume system
+   > All done :)
 
-After the Android installation is complete it is possible to boot
-Android from NAND by setting the JP3 link to 1-2 and power cycling the
-board. If the JP3 link is left in 2-3, and the board is power cycled
-Android will also boot, but the boot.img file will be read from the
-SDCARD. This can be convenient when testing changes for the kernel or
-root filesystem.
+4. After the Android installation is complete it is possible to boot
+   Android from NAND by setting the JP3 link to 1-2 and power cycling the
+   board. If the JP3 link is left in 2-3, and the board is power cycled
+   Android will also boot, but the boot.img file will be read from the
+   SDCARD. This can be convenient when testing changes for the kernel or
+   root filesystem.
+
+Flashing Android to SD card (EXT4)
+========================================
+
+This procedure is usable in all cases.
+
+1. Install SD card into reader. Make note of which Linux device represents
+   the SD card. On my system it's /dev/sde. You'll need to adjust the
+   instructions in this section to match the SD card device on your system.
+
+2. $ cd $TOP/device/imgtec/ci20/sdcardinstaller
+
+3. $ sudo dd if=/dev/zero of=/dev/sdX bs=512 count=1
+
+   This step may not be needed. Typically, it's needed only if the SD
+   card was previously formatted for use as VFAT device. In any case,
+   running this extra step doesn't hurt anything.
+
+4. $ ./mksdcard /dev/sdX
+
+5. Install SD card into CI20.
+
+6. Set the JP3 link to 2-3 position and power cycle the board.
