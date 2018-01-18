@@ -1,6 +1,6 @@
 # setup_fs
-type setup_fs, domain;
-type setup_fs_exec, exec_type, file_type;
+type setup_fs, coredomain;
+type setup_fs_exec, vendor_file_type, exec_type, file_type;
 
 init_daemon_domain(setup_fs)
 

@@ -133,5 +133,8 @@ CAMERA_SUPPORT_VIDEOSNAPSHORT := false
 CAMERA_VERSION := 1
 CI20_AUDIO := true
 
-BOARD_SEPOLICY_DIRS += \
-	device/imgtec/ci20/sepolicy
+BOARD_SEPOLICY_DIRS +=  device/imgtec/ci20/sepolicy/vendor
+BOARD_PLAT_PRIVATE_SEPOLICY_DIR := device/imgtec/ci20/sepolicy/private
+
+DEVICE_MANIFEST_FILE := device/imgtec/ci20/config/manifest.xml
+DEVICE_MATRIX_FILE   := device/imgtec/ci20/config/compatibility_matrix.xml

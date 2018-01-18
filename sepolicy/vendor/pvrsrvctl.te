@@ -1,5 +1,5 @@
 type pvrsrvctl, domain;
-type pvrsrvctl_exec, exec_type, file_type;
+type pvrsrvctl_exec, vendor_file_type, exec_type, file_type;
 
 # Started by init
 init_daemon_domain(pvrsrvctl)

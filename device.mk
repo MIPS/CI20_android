@@ -23,6 +23,8 @@ endif
 PRODUCT_COPY_FILES := \
     $(LOCAL_KERNEL):kernel
 
+PRODUCT_FULL_TREBLE_OVERRIDE := true
+
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/config/init.ci20.rc:root/init.ci20.rc \
     $(LOCAL_PATH)/config/init.ci20.usb.rc:root/init.ci20.usb.rc \
@@ -113,24 +115,32 @@ PRODUCT_PACKAGES +=      \
     audio.a2dp.default   \
     libdrm
 
+PRODUCT_PACKAGES += \
+    android.hardware.configstore@1.0-service
+
 # Audio HAL
 PRODUCT_PACKAGES += \
     android.hardware.audio@2.0-impl \
-    android.hardware.audio.effect@2.0-impl
+    android.hardware.audio.effect@2.0-impl \
+    android.hardware.audio@2.0-service \
+    android.hardware.soundtrigger@2.0-impl
 
 # Bluetooth HAL
 PRODUCT_PACKAGES += \
     libbt-vendor \
-    android.hardware.bluetooth@1.0-impl
+    android.hardware.bluetooth@1.0-impl \
+    android.hardware.bluetooth@1.0-service
 
 # Camera HAL
 PRODUCT_PACKAGES += \
     camera.xb4780 \
-    android.hardware.camera.provider@2.4-impl
+    android.hardware.camera.provider@2.4-impl \
+    android.hardware.camera.provider@2.4-service
 
 # Keymaster HAL
 PRODUCT_PACKAGES += \
-    android.hardware.keymaster@3.0-impl
+    android.hardware.keymaster@3.0-impl \
+    android.hardware.keymaster@3.0-service
 
 # Light HAL
 PRODUCT_PACKAGES += \
@@ -139,7 +149,8 @@ PRODUCT_PACKAGES += \
 
  # Memtrack HAL
 PRODUCT_PACKAGES += \
-    android.hardware.memtrack@1.0-impl
+    android.hardware.memtrack@1.0-impl \
+    android.hardware.memtrack@1.0-service
 
 # Power HAL
 PRODUCT_PACKAGES += \
@@ -148,7 +159,13 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_PACKAGES += \
     android.hardware.graphics.allocator@2.0-impl \
+    android.hardware.graphics.allocator@2.0-service \
     android.hardware.graphics.mapper@2.0-impl
+
+# DRM HAL
+PRODUCT_PACKAGES += \
+    android.hardware.drm@1.0-impl \
+    android.hardware.drm@1.0-service
 
 # Vendor Interface Manifest
 PRODUCT_COPY_FILES += \
@@ -297,3 +314,27 @@ PRODUCT_PACKAGES +=     \
     Launcher3
 
 #$(call inherit-product-if-exists, hardware/broadcom/wlan/bcmdhd/firmware/bcm4324/device-bcm.mk)
+
+PRODUCT_PROPERTY_OVERRIDES += \
+   ro.vendor.vndk.version=26.1.0 \
+
+PRODUCT_PACKAGES += \
+   android.hardware.graphics.mapper@2.0.vndk-sp-gen \
+   android.hardware.graphics.common@1.0.vndk-sp-gen \
+   android.hardware.graphics.allocator@2.0.vndk-sp-gen \
+   libcutils.vndk-sp-gen \
+   libc++.vndk-sp-gen \
+   libhardware.vndk-sp-gen \
+   libutils.vndk-sp-gen \
+   libbacktrace.vndk-sp-gen \
+   libbase.vndk-sp-gen \
+   libhidlbase.vndk-sp-gen \
+   libhidltransport.vndk-sp-gen \
+   libhwbinder.vndk-sp-gen \
+   libunwind.vndk-sp-gen \
+   liblzma.vndk-sp-gen
+
+PRODUCT_PACKAGES += \
+   libunwind.vndk-ext-gen \
+   liblzma.vndk-ext-gen \
+   libcrypto.vndk-ext-gen

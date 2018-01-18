@@ -7,3 +7,5 @@ allow init mtd_device:chr_file r_file_perms;
 # ConfigFS support sepolicy permissions
 allow init configfs:dir create_dir_perms;
 allow init configfs:{ file lnk_file } create_file_perms;
+
+allow init cache_block_device:blk_file relabelto;

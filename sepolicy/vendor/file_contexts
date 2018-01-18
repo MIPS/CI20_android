@@ -1,0 +1,48 @@
+##### file_contexts
+/dev/dmmu			u:object_r:gpu_device:s0
+/dev/ipu0			u:object_r:gpu_device:s0
+/dev/dri/.+			u:object_r:gpu_device:s0
+/dev/sw_sync			u:object_r:gpu_device:s0
+/dev/jz-vpu			u:object_r:video_device:s0
+/dev/pvr_sync			u:object_r:gpu_device:s0
+/dev/ttyS2			u:object_r:serial_device:s0
+
+/vendor/bin/pvrsrvctl		u:object_r:pvrsrvctl_exec:s0
+/system/bin/setup_fs		u:object_r:setup_fs_exec:s0
+
+/dev/ubi/ubi0/ubi.*		u:object_r:mtd_device:s0
+
+/dev/block/platform/ahb2/13450000.msc/by-name/system	u:object_r:system_block_device:s0
+/dev/block/platform/ahb2/13450000.msc/by-name/vendor	u:object_r:system_block_device:s0
+/dev/block/platform/ahb2/13450000.msc/by-name/cache	u:object_r:cache_block_device:s0
+/dev/block/platform/ahb2/13450000.msc/by-name/userdata	u:object_r:userdata_block_device:s0
+
+/dev/block/zram0		u:object_r:swap_block_device:s0
+
+
+###############################################
+# same-process HAL files and their dependencies
+#
+/vendor/lib/hw/gralloc\.xb4780\.so                            u:object_r:same_process_hal_file:s0
+/vendor/lib/egl/libEGL_POWERVR_SGX540_130\.so                 u:object_r:same_process_hal_file:s0
+/vendor/lib/egl/libGLESv1_CM_POWERVR_SGX540_130.\so           u:object_r:same_process_hal_file:s0
+/vendor/lib/egl/libGLESv2_POWERVR_SGX540_130\.so              u:object_r:same_process_hal_file:s0
+/vendor/lib/libglslcompiler\.so                               u:object_r:same_process_hal_file:s0
+/vendor/lib/libIMGegl\.so                                     u:object_r:same_process_hal_file:s0
+/vendor/lib/libpvr2d\.so                                      u:object_r:same_process_hal_file:s0
+/vendor/lib/libpvrANDROID_WSEGL\.so                           u:object_r:same_process_hal_file:s0
+/vendor/lib/libPVRScopeServices\.so                           u:object_r:same_process_hal_file:s0
+/vendor/lib/libsrv_init\.so                                   u:object_r:same_process_hal_file:s0
+/vendor/lib/libsrv_um\.so                                     u:object_r:same_process_hal_file:s0
+/vendor/lib/libusc\.so                                        u:object_r:same_process_hal_file:s0
+/vendor/lib/libdbm\.so                                        u:object_r:same_process_hal_file:s0
+/vendor/lib/libcreatesurface\.so                              u:object_r:same_process_hal_file:s0
+/vendor/lib/hw/hwcomposer\.xb4780\.so                         u:object_r:same_process_hal_file:s0
+/vendor/lib/libdrm\.so                                        u:object_r:same_process_hal_file:s0
+/vendor/lib/libakim\.so                                       u:object_r:same_process_hal_file:s0
+
+# TODO: Take a closer look into these:
+/vendor/lib/libcrypto\.so                                     			u:object_r:same_process_hal_file:s0
+/vendor/lib/libunwind\.so                                     			u:object_r:same_process_hal_file:s0
+/vendor/lib/liblzma\.so                                       			u:object_r:same_process_hal_file:s0
+/vendor/lib/hw/android\.hardware\.graphics\.allocator@2\.0-impl\.so		u:object_r:same_process_hal_file:s0
