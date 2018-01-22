@@ -1,24 +1,5 @@
 LOCAL_PATH := $(call my-dir)
 
-ifndef BOARD_VNDK_VERSION
-VNDK_SP_LIBRARIES := \
-	android.hardware.graphics.mapper@2.0 \
-	android.hardware.graphics.common@1.0 \
-	android.hardware.graphics.allocator@2.0 \
-	libcutils \
-	libc++ \
-	libhardware \
-	libutils \
-	libbacktrace \
-	libbase \
-	libhidlbase \
-	libhidltransport \
-	libhwbinder \
-	libunwind \
-	liblzma
-
-endif
-
 EXTRA_VENDOR_LIBRARIES := \
 	libcrypto \
 	libunwind \
@@ -38,9 +19,6 @@ LOCAL_MODULE_RELATIVE_PATH := $3
 LOCAL_VENDOR_MODULE := $4
 include $$(BUILD_PREBUILT)
 endef
-
-$(foreach lib,$(VNDK_SP_LIBRARIES),\
-    $(eval $(call define-vndk-lib,$(lib),vndk-sp-gen,vndk-sp,)))
 
 $(foreach lib,$(EXTRA_VENDOR_LIBRARIES),\
     $(eval $(call define-vndk-lib,$(lib),vndk-ext-gen,,true)))

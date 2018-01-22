@@ -235,7 +235,7 @@ PRODUCT_COPY_FILES += \
 
 # Magiccode libakim
 PRODUCT_COPY_FILES += \
-        $(LOCAL_PATH)/akim/libakim.so:vendor/lib/libakim.so \
+        $(LOCAL_PATH)/akim/libakim.so:system/lib/libakim.so \
         $(LOCAL_PATH)/akim/magiccode_prefs.xml:/system/etc/magiccode_prefs.xml
 
 #
@@ -316,25 +316,12 @@ PRODUCT_PACKAGES +=     \
 #$(call inherit-product-if-exists, hardware/broadcom/wlan/bcmdhd/firmware/bcm4324/device-bcm.mk)
 
 PRODUCT_PROPERTY_OVERRIDES += \
-   ro.vendor.vndk.version=26.1.0 \
+    ro.vendor.vndk.version=27.1.0 \
+
+# Include vndk/vndk-sp/ll-ndk modules
+PRODUCT_PACKAGES += vndk_package
 
 PRODUCT_PACKAGES += \
-   android.hardware.graphics.mapper@2.0.vndk-sp-gen \
-   android.hardware.graphics.common@1.0.vndk-sp-gen \
-   android.hardware.graphics.allocator@2.0.vndk-sp-gen \
-   libcutils.vndk-sp-gen \
-   libc++.vndk-sp-gen \
-   libhardware.vndk-sp-gen \
-   libutils.vndk-sp-gen \
-   libbacktrace.vndk-sp-gen \
-   libbase.vndk-sp-gen \
-   libhidlbase.vndk-sp-gen \
-   libhidltransport.vndk-sp-gen \
-   libhwbinder.vndk-sp-gen \
-   libunwind.vndk-sp-gen \
-   liblzma.vndk-sp-gen
-
-PRODUCT_PACKAGES += \
-   libunwind.vndk-ext-gen \
-   liblzma.vndk-ext-gen \
-   libcrypto.vndk-ext-gen
+    libunwind.vndk-ext-gen \
+    liblzma.vndk-ext-gen \
+    libcrypto.vndk-ext-gen
