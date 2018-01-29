@@ -260,7 +260,7 @@ PRODUCT_COPY_FILES += \
 	vendor/google/apps/GmsCore/lib/armeabi-v7a/libgoogle-ocrclient-v3.so:/system/priv-app/GmsCore/lib/arm/libgoogle-ocrclient-v3.so \
 	vendor/google/apps/GmsCore/lib/armeabi-v7a/libjgcastservice.so:/system/priv-app/GmsCore/lib/arm/libjgcastservice.so \
 	vendor/google/apps/GmsCore/lib/armeabi-v7a/libleveldbjni.so:/system/priv-app/GmsCore/lib/arm/libleveldbjni.so \
-	vendor/google/apps/GmsCore/lib/armeabi-v7a/libNearbyApp.so:/system/priv-app/GmsCore/lib/arm/libNearbyApp.so \
+	vendor/google/apps/GmsCore/lib/armeabi-v7a/libvcdiffjni.so:/system/priv-app/GmsCore/lib/arm/libvcdiffjni.so \
 	vendor/google/apps/GmsCore/lib/armeabi-v7a/libsslwrapper_jni.so:/system/priv-app/GmsCore/lib/arm/libsslwrapper_jni.so \
 	vendor/google/apps/GmsCore/lib/armeabi-v7a/libwearable-selector.so:/system/priv-app/GmsCore/lib/arm/libwearable-selector.so \
 	vendor/google/apps/GmsCore/lib/armeabi-v7a/libWhisper.so:/system/priv-app/GmsCore/lib/arm/libWhisper.so
