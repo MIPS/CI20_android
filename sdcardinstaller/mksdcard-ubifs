@@ -7,7 +7,7 @@
 # Derived from the Debian setup script by Paul Burton
 #
 # Usage:
-#   ./mksdcard /dev/sdX
+#   ./mksdcard-ubifs /dev/sdX
 #
 
 set -e
