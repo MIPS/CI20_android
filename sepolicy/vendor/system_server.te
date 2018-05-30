@@ -1,2 +1,12 @@
 #============= system_server ==============
+allow system_server audioserver:file write;
+allow system_server bluetooth:file write;
+allow system_server hal_audio_default:file write;
 allow system_server ion_device:chr_file write;
+allow system_server mediaprovider:file write;
+allow system_server platform_app:file write;
+allow system_server priv_app:file write;
+allow system_server system_app:file write;
+allow system_server untrusted_app:file write;
+allow system_server untrusted_app_25:file write;
+allow system_server nfc:file write;

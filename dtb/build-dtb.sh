@@ -55,7 +55,7 @@ pushd `dirname $0` &> /dev/null
 dtsPrebuiltDir=`pwd`
 popd &> /dev/null
 
-cp $KERNEL_DIR/arch/mips/boot/dts/jz4780.dtsi $tmpDir/
+cp $KERNEL_DIR/arch/mips/boot/dts/ingenic/jz4780.dtsi $tmpDir/
 
 dts_id=("sdcard" "nand")
 
@@ -67,7 +67,7 @@ do
 	DST=$dtsPrebuiltDir/$ID.dtb
 
 	# Append kernel device tree source with device tree specified in Android device project
-	cat $KERNEL_DIR/arch/mips/boot/dts/ci20.dts $dtsPrebuiltDir/src/$ID.dts > $SRC
+	cat $KERNEL_DIR/arch/mips/boot/dts/ingenic/ci20.dts $dtsPrebuiltDir/src/$ID.dts > $SRC
 
 	cpp -nostdinc -I $KERNEL_DIR/include -undef -x assembler-with-cpp $SRC > $TMP
 	dtc -O dtb -b 0 -o $DST $TMP

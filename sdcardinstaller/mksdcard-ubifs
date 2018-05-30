@@ -330,6 +330,8 @@ burn_android_images()
   # copy Android vendor image
   sudo cp -v ${vendorImg} ${sdMount}/
 
+  sync
+
   burn_system_image
 }
 

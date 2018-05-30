@@ -8,7 +8,6 @@
 /dev/ttyS2			u:object_r:serial_device:s0
 
 /vendor/bin/pvrsrvctl		u:object_r:pvrsrvctl_exec:s0
-/system/bin/setup_fs		u:object_r:setup_fs_exec:s0
 
 /dev/ubi/ubi0/ubi.*		u:object_r:mtd_device:s0
 
